@@ -1,2 +1,3 @@
 mastodon-instance = mastodon.social
 mastodon-token = somethingReallyLongAnd_Complicated
+timeline = user # or public/direct
