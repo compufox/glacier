@@ -25,3 +25,23 @@
   "getf but for alists"
   (or (cdr (assoc indicator place :test #'equal))
       default))
+
+(defun get-mastodon-streaming-url ()
+  "gets the websocket url for the mastodon instance"
+  (handler-case
+      (agetf
+       (agetf (json:decode-json-from-string
+	       (dex:get (format nil "https://~a/api/v1/instance"
+				(config :mastodon-instance))))
+	      :urls)
+       :streaming--api)
+    (error (e) (error "unexpected error occurred"))))
+
+(defun print-open ()
+  "prints a message when the websocket is connected"
+  (print "websocket connected"))
+
+(defun print-close (&key code reason)
+  "prints a message when the websocket is closed"
+  (when (and code reason)
+    (format t "websocket closed because ~A (code=~A)~%" reason code)))

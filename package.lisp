@@ -5,8 +5,9 @@
   (:import-from :simple-config
 		:load-config
 		:config)
+  (:import-from :
   (:export :run-bot
-	   :bot
+	   :mastodon-bot
 	   :bot-on-update
 	   :bot-on-delete
 	   :bot-on-notification))

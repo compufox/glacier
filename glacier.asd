@@ -7,12 +7,16 @@
   :version "0.0.1"
   :depends-on (#:dexador #:bordeaux-threads
 	       #:websocket-driver #:simple-config
-	       #:with-user-abort #:cl-json)
+	       #:with-user-abort #:cl-json
+	       #:tooter #:cl-ppcre)
   :components ((:module "bots" :depends-on ("package")
 		:serial t
 		:components
-		((:file "bot")))
+		((:file "bot")
+		 (:file "periodic")
+		 (:file "command")))
 	       
 	       (:file "package")
+	       (:file "extensions")
 	       (:file "util")
                (:file "glacier")))

@@ -5,7 +5,7 @@
 (defvar *bot*)
 (defvar *websocket-client*)
 
-(defun run-bot (bot)
+(defmethod run-bot ((bot mastodon-bot))
   (handler-case
       (with-user-abort
 	(let ((*bot* bot)
@@ -25,37 +25,23 @@
     (error (e)
       (format t "encountered unexpected error: ~A~%" e))))
 
-
-(defun get-mastodon-streaming-url ()
-  "gets the websocket url for the mastodon instance"
-  (handler-case
-      (agetf
-       (agetf (json:decode-json-from-string
-	       (dex:get (format nil "https://~a/api/v1/instance"
-				(config :mastodon-instance))))
-	      :urls)
-       :streaming--api)
-    (error (e) (error "unexpected error occurred"))))
-
-(defun print-open ()
-  "prints a message when the websocket is connected"
-  (print "websocket connected"))
-
-(defun print-close (&key code reason)
-  "prints a message when the websocket is closed"
-  (when (and code reason)
-    (format t "websocket closed because ~A (code=~A)~%" reason code)))
-
 (defun dispatch (message)
-  (let ((parsed (json:decode-json-from-string message)))
+  (let* ((parsed (json:decode-json-from-string message))
+	 (parsed-payload (json:decode-json-from-string (agetf parsed "payload"))))
+    
     (cond
-      ((string= (agetf parsed "event") "update")
-       (funcall (bot-on-update *bot*) (agetf parsed "payload")))
+      ((and (string= (agetf parsed "event") "update")
+	    (bot-on-update *bot*))
+       (funcall (bot-on-update *bot*) 
+		(tooter:find-status (bot-client *bot*) (agetf parsed-payload :id))))
       
-      ((string= (agetf parsed "event") "delete")
-       (funcall (bot-on-delete *bot*) (agetf parsed "payload")))
+      ((and (string= (agetf parsed "event") "delete")
+	    (bot-on-delete *bot*))
+       (funcall (bot-on-delete *bot*) parsed-payload))
       
-      ((string= (agetf parsed "event") "notification")
-       (funcall (bot-on-notification *bot*) (agetf parsed "payload")))
+      ((and (string= (agetf parsed "event") "notification")
+	    (bot-on-notification *bot*))
+       (funcall (bot-on-notification *bot*) 
+		(tooter:find-notification (bot-client *bot*) (agetf parsed-payload :id))))
 
       (t nil))))
