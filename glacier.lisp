@@ -63,3 +63,17 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
 	     (funcall (bot-on-notification *bot*) notif))))
 
       (t nil))))
+
+(defun command-dispatch (status)
+  "parses STATUS content for a command word, and runs any function it has in *commands* with it as the argument"
+  (let* ((command (find-if #'commandp
+			   (str:words
+			    (tooter:plain-format-html (tooter:content status)))))
+	 (cmd-func (gethash command *commands*)))
+    
+    (when cmd-func
+      (funcall cmd-func status)
+      
+      ;; if we've hit here we return t, just so the calling function knows
+      ;;  that we actually did something
+      t)))

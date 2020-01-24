@@ -62,3 +62,14 @@
       (concatenate 'string
 		   "https://"
 		   domain)))
+
+(defun commandp (word)
+  "checks if WORD is a command"
+  (str:starts-with-p "!" word))
+
+(defun add-command (cmd function)
+  "adds a command into our hash
+
+CMD should be a string
+FUNCTION should be a function that accepts a single parameter (a tooter:status object)"
+  (setf (gethash cmd *commands*) function))
