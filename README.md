@@ -1,4 +1,4 @@
-# glacier
+# ![glacier logo](https://i.imgur.com/tHNtPgc.png)
 ### _ava fox_
 
 lightweight wrapper for making mastodon bots
