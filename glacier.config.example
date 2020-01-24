@@ -1,3 +1,5 @@
 mastodon-instance = mastodon.social
 mastodon-token = somethingReallyLongAnd_Complicated
+strip-html = true # automatically strips html
+                  # tags out of incoming statuses
 timeline = user # or public/direct

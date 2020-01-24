@@ -47,4 +47,8 @@ see documentation for that function"
 		      :media media
 		      :sensitive sensitive))
 
-		  
+;; strips out html tags if we have that set in our config
+(defmethod tooter:decode-entity :after ((status tooter:status) data)
+  (when (config :strip-html)
+    (setf (tooter:content status) (tooter:plain-format-html (tooter:content status))))
+  status)
