@@ -56,6 +56,19 @@ the following runs a bot that responds to a mention with a cordial hello
                                                       :on-notification #'maybe-respond))
 ```
 
+the following runs a bot that will respond to posts with `!hello` in 
+them with status personalized with their displayname
+
+```lisp
+(defun cordial-reply (status)
+  (glacier:reply status (format nil "hi, ~a! :3"
+                        (tooter:display-name (tooter:account status)))))
+
+(glacier:add-command "hello" #'cordial-reply)
+
+(glacier:run-bot (make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config"))
+```
+
 ## Helper Functions
 
 `after (amount duration &body body))`
@@ -84,9 +97,25 @@ a thin wrapper around TOOTER:MAKE-STATUS
 `(post "hi~" :visibility :public)`
 
 
-## Todo
+---
 
-- bots that react to commands
+`reply (status text &key include-mentions)`
+
+replys to STATUS with TEXT
+
+if include-mentions is non-nil then the reply will contain **all** mentions from the original status
+
+NOTE: reply will **always** include an @ to the person it's replying to
+
+---
+
+`add-command (cmd function)`
+
+adds a command with CMD being the text to trigger the command and FUNCTION being the function that runs
+
+FUNCTION needs to accept one parameter: a tooter:status object
+
+---
 
 ## License
 
