@@ -21,12 +21,12 @@
   "asynchronously runs BODY after AMOUNT of DURATION"
   `(bt:make-thread
     (lambda ()
-      (sleep ,(parse-time amount duration))
+      (sleep (parse-time ,amount ,duration))
       ,@body)))
 
 (defmacro after-every (amount duration &body body)
   "runs BODY after every AMOUNT of DURATION"
-  `(loop do (sleep ,(parse-time amount duration))
+  `(loop do (sleep (parse-time ,amount ,duration))
 	    ,@body))
 
 (defun agetf (place indicator &optional default)
