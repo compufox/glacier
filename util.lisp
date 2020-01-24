@@ -67,9 +67,18 @@
   "checks if WORD is a command"
   (str:starts-with-p "!" word))
 
-(defun add-command (cmd function)
+(defun add-command (cmd function &key privileged)
   "adds a command into our hash
 
 CMD should be a string
 FUNCTION should be a function that accepts a single parameter (a tooter:status object)"
-  (setf (gethash cmd *commands*) function))
+  (setf (gethash cmd (if privileged
+			 *privileged-commands*
+			 *commands*)) function))
+
+(defun privileged-reply-p (status)
+  "returns T if STATUS is from an account that the bot follows"
+  (tooter:following (car
+		     (tooter:relationships
+		      *bot*
+		      (list (tooter:id (tooter:account status)))))))

@@ -65,11 +65,18 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
       (t nil))))
 
 (defun command-dispatch (status)
-  "parses STATUS content for a command word, and runs any function it has in *commands* with it as the argument"
+  "parses STATUS content for a command word, and runs any function it has in *commands* with it as the argument
+
+if STATUS comes from an account the bot is following, also checks for any command in *privileged-commands*"
   (let* ((command (find-if #'commandp
 			   (str:words
 			    (tooter:plain-format-html (tooter:content status)))))
-	 (cmd-func (gethash (subseq command 1) *commands*)))
+	 
+	 ;; if the bot is following the account that STATUS came from,
+	 ;;  we search for both a privileged AND a normal command
+	 (cmd-func (or (and (privileged-reply-p status)
+			    (gethash (subseq command 1) *privileged-commands*))
+		       (gethash (subseq command 1) *commands*))))
     (when cmd-func
       (funcall cmd-func status)
       
