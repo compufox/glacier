@@ -17,17 +17,27 @@
 	      86400)
 	     (t (error "unknown duration")))))
 
-(defmacro after (amount duration &body body)
-  "asynchronously runs BODY after AMOUNT of DURATION"
-  `(bt:make-thread
-    (lambda ()
-      (sleep (parse-time ,amount ,duration))
-      ,@body)))
+(defmacro after ((amount duration &key async) &body body)
+  "runs BODY after AMOUNT of DURATION
 
-(defmacro after-every (amount duration &body body)
-  "runs BODY after every AMOUNT of DURATION"
-  `(loop do (sleep (parse-time ,amount ,duration))
-	    ,@body))
+if ASYNC is non-nil, runs asynchronously"
+  (let ((code `((sleep (parse-time ,amount ,duration))
+		,@body)))
+    (if async
+	`(bt:make-thread
+	  (lambda () ,@code))
+	`(progn ,@code))))
+
+(defmacro after-every ((amount duration &key async) &body body)
+  "runs BODY after every AMOUNT of DURATION
+
+if ASYNC is non-nil, runs asynchronously"
+  (let ((code `(loop do (sleep (parse-time ,amount ,duration))
+		     ,@body)))
+    (if async
+	`(bt:make-thread
+	  (lambda () ,code))
+	code)))
 
 (defun agetf (place indicator &optional default)
   "getf but for alists"

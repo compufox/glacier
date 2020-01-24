@@ -40,7 +40,7 @@ please see the example config for option names
 
 ```lisp
 (glacier:run-bot (make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config")
-  (glacier:after-every 30 :minutes
+  (glacier:after-every (30 :minutes)
     (glacier:post "trans rights are human rights" :visibility :public)))
 ```
 
@@ -71,12 +71,14 @@ them with status personalized with their displayname
 
 ## Helper Functions
 
-`after (amount duration &body body))`
+`after ((amount duration &key async) &body body))`
 
-asynchronously runs BODY after AMOUNT of DURATION time has passed
+runs BODY after AMOUNT of DURATION time has passed
+
+if ASYNC is non-nil runs asynchronously
 
 ```lisp
-(after 3 :minutes (print "hello"))
+(after (3 :minutes) (print "hello"))
 
 ;; (after 3 minutes)
 ;;=> "hello"
@@ -84,7 +86,7 @@ asynchronously runs BODY after AMOUNT of DURATION time has passed
 
 ---
 
-`after-every (amount duration &body body)`
+`after-every ((amount duration &key async) &body body)`
 
 same as AFTER except repeats after every duration
 
@@ -99,7 +101,7 @@ a thin wrapper around TOOTER:MAKE-STATUS
 
 ---
 
-`reply (status text &key include-mentions)`
+`reply (status text &key include-mentions media)`
 
 replys to STATUS with TEXT
 
@@ -109,11 +111,14 @@ NOTE: reply will **always** include an @ to the person it's replying to
 
 ---
 
-`add-command (cmd function)`
+`add-command (cmd function &key privileged)`
 
 adds a command with CMD being the text to trigger the command and FUNCTION being the function that runs
 
 FUNCTION needs to accept one parameter: a tooter:status object
+
+if PRIVILEGED is non-nil, the bot needs to be following the account the mention comes from
+for the command to be triggered
 
 ---
 
