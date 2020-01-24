@@ -82,3 +82,21 @@ FUNCTION should be a function that accepts a single parameter (a tooter:status o
 		     (tooter:relationships
 		      *bot*
 		      (list (tooter:id (tooter:account status)))))))
+
+(defun fave-p (notification)
+  (eq (tooter:kind notification) :favourite))
+
+(defun mention-p (notification)
+  (eq (tooter:kind notification) :mention))
+
+(defun boost-p (notification)
+  (eq (tooter:kind notification) :reblog))
+
+(defun poll-ended-p (notification)
+  (eq (tooter:kind notification) :poll))
+
+(defun follow-request-p (notification)
+  (eq (tooter:kind notification) :follow-request))
+
+(defun follow-p (notification)
+  (eq (tooter:kind notification) :follow))

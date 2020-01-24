@@ -15,4 +15,11 @@
 	   :post
 	   :reply
 	   :no-bot-p
-	   :add-command))
+	   :add-command
+	   
+	   :follow-request-p
+           :poll-ended-p
+	   :follow-p
+           :boost-p
+	   :fave-p
+	   :mention-p))
