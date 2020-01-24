@@ -14,4 +14,5 @@
 	   :after
 	   :post
 	   :reply
-	   :no-bot-p))
+	   :no-bot-p
+	   :add-command))

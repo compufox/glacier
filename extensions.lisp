@@ -23,13 +23,13 @@
 
 if INCLUDE-MENTIONS is non-nil, include mentions besides the primary account being replied to"
   (let* ((client (bot-client *bot*))
-	 (reply-account (tooter:find-account client (tooter:in-reply-to-account-id status)))
+	 (reply-account (tooter:account status))
 	 (reply-mentions (loop for mention in (tooter:mentions status)
-			    unless (string= (tooter:username mention)
-					    (tooter:username reply-account))
-			    collect (concatenate 'string "@" (tooter:username mention)))))
+			    unless (string= (tooter::account-name mention)
+					    (tooter::account-name reply-account))
+			    collect (concatenate 'string "@" (tooter::account-name mention)))))
     (tooter:make-status client (str:join " "
-					 `(,(tooter:username reply-account)
+					 `(,(concatenate 'string "@" (tooter::account-name reply-account))
 					   ,@(when include-mentions reply-mentions)
 					   ,text))
 			:visibility (tooter:visibility status)
