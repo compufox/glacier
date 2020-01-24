@@ -8,7 +8,7 @@
   :depends-on (#:dexador #:bordeaux-threads
 	       #:websocket-driver #:simple-config
 	       #:with-user-abort #:cl-json
-	       #:tooter #:cl-ppcre)
+	       #:tooter #:cl-ppcre #:str)
   :components ((:module "bots" :depends-on ("package")
 		:serial t
 		:components

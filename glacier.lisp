@@ -30,7 +30,7 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
        (format t "encountered unexpected error: ~A~%" e))))
 
 (defun dispatch (message)
-  "gets the type of MESSAGE we intercepted and calls the appropriate functions on our bot with the proper tooter object"
+  "gets the type of MESSAGE we received and calls the appropriate functions on our bot with the proper tooter object"
   (let* ((parsed (json:decode-json-from-string message))
 	 (parsed-payload (json:decode-json-from-string (agetf parsed :payload))))
     
@@ -44,9 +44,22 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
 	    (slot-boundp *bot* 'on-delete))
        (funcall (bot-on-delete *bot*) parsed-payload))
       
-      ((and (string= (agetf parsed :event) "notification")
-	    (slot-boundp *bot* 'on-notification))
-       (funcall (bot-on-notification *bot*) 
-		(tooter:find-notification (bot-client *bot*) (agetf parsed-payload :id))))
+      ((string= (agetf parsed :event) "notification")
+
+       ;; we go ahead and get the notification object through tooter
+       ;;  for ease of parsing, plus we were gonna get it anyway so
+       ;;   :shrug:
+       (let ((notif (tooter:find-notification (bot-client *bot*) (agetf parsed-payload :id))))
+	 (if (and
+	      ;; just some trickery to ensure that if we get a mention, to run
+	      ;;  our command dispatch.
+	      (not (and (eq (tooter:kind notif) :mention)
+			(command-dispatch (tooter:status notif))))
+
+	      ;; if we actually have a notification handler
+	      (slot-boundp *bot* 'on-notification))
+	     
+	     ;; run it
+	     (funcall (bot-on-notification *bot*) notif))))
 
       (t nil))))
