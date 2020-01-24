@@ -49,7 +49,7 @@ the following runs a bot that responds to a mention with a cordial hello
 ```lisp
 (defun maybe-respond (notification)
   "respond to a status from a mention NOTIFICATION"
-  (when (eq (tooter:kind notification) :mention)
+  (when (glacier:mention-p notification)
     (glacier:reply (tooter:status notification) "hi! :3")))
 
 (glacier:run-bot (make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config"
