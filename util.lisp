@@ -85,7 +85,7 @@ FUNCTION should be a function that accepts a single parameter (a tooter:status o
   "returns T if STATUS is from an account that the bot follows"
   (tooter:following (car
 		     (tooter:relationships
-		      *bot*
+		      (bot-client *bot*)
 		      (list (tooter:id (tooter:account status)))))))
 
 (defun fave-p (notification)
