@@ -51,7 +51,7 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
 	 (if (and
 	      ;; just some trickery to ensure that if we get a mention, to run
 	      ;;  our command dispatch.
-	      (not (and (eq (tooter:kind notif) :mention)
+	      (not (and (mention-p notif)
 			(command-dispatch (tooter:status notif))))
 
 	      ;; if we actually have a notification handler
@@ -66,18 +66,20 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
   "parses STATUS content for a command word, and runs any function it has in *commands* with it as the argument
 
 if STATUS comes from an account the bot is following, also checks for any command in *privileged-commands*"
-  (let* ((command (find-if #'commandp
-			   (str:words
-			    (tooter:plain-format-html (tooter:content status)))))
+  (let ((command (find-if #'commandp
+			  (str:words
+			   (tooter:plain-format-html (tooter:content status))))))
 	 
-	 ;; if the bot is following the account that STATUS came from,
-	 ;;  we search for both a privileged AND a normal command
-	 (cmd-func (or (and (privileged-reply-p status)
-			    (gethash (subseq command 1) *privileged-commands*))
-		       (gethash (subseq command 1) *commands*))))
-    (when cmd-func
-      (funcall cmd-func status)
-      
-      ;; if we've hit here we return t, just so the calling function knows
-      ;;  that we actually did something
-      t)))
+    (when command
+
+      ;; if the bot is following the account that STATUS came from,
+      ;;  we search for both a privileged AND a normal command
+      (let ((cmd-func (or (and (privileged-reply-p status)
+			       (gethash (subseq command 1) *privileged-commands*))
+			  (gethash (subseq command 1) *commands*))))
+	(when cmd-func
+	  (funcall cmd-func status)
+
+	  ;; if we've hit here we return t, just so the calling function knows
+	  ;;  that we actually did something
+	  t)))))
