@@ -53,4 +53,6 @@ see documentation for that function"
 (defmethod tooter:decode-entity :after ((status tooter:status) data)
   (when (config :strip-html)
     (setf (tooter:content status) (tooter:plain-format-html (tooter:content status))))
+  (when (config :strip-bot-username)
+    (setf (tooter:content status) (str:replace-all (bot-username *bot*) "" (tooter:content status))))
   status)
