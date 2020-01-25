@@ -15,6 +15,9 @@
 	     ((or (eq duration :days)
 		  (eq duration :day))
 	      86400)
+	     ((or (eq duration :weeks)
+		  (eq duration :week))
+	      604800)
 	     (t (error "unknown duration")))))
 
 (defmacro after ((amount duration &key async) &body body)
