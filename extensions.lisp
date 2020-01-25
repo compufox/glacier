@@ -18,7 +18,7 @@
 			     collect (or (cl-ppcre:scan *no-bot-regex* f)
 					 (cl-ppcre:scan *no-bot-regex* v))))))
 
-(defmethod reply ((status tooter:status) text &key include-mentions media)
+(defmethod reply ((status tooter:status) text &key include-mentions media cw sensitive visibility)
   "replies to a STATUS with TEXT. copies the visibility and content warning as the post it's replying to
 
 if INCLUDE-MENTIONS is non-nil, include mentions besides the primary account being replied to"
@@ -33,8 +33,9 @@ if INCLUDE-MENTIONS is non-nil, include mentions besides the primary account bei
 					   ,@(when include-mentions reply-mentions)
 					   ,text))
 			:media media
-			:visibility (tooter:visibility status)
-			:spoiler-text (tooter:spoiler-text status)
+			:sensitive sensitive
+			:visibility (or visibility (tooter:visibility status))
+			:spoiler-text (or cw (tooter:spoiler-text status))
 			:in-reply-to (tooter:id status))))
 
 (defun post (text &key (visibility :unlisted) cw sensitive media)
