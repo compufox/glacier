@@ -51,7 +51,7 @@ see documentation for that function"
 
 ;; strips out html tags if we have that set in our config
 (defmethod tooter:decode-entity :after ((status tooter:status) data)
-  (when (config :strip-html)
+  (when (config :strip-html t)
     (setf (tooter:content status) (tooter:plain-format-html (tooter:content status))))
   (when (config :strip-bot-username)
     (setf (tooter:content status) (str:replace-all (bot-username *bot*) "" (tooter:content status))))
