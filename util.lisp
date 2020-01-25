@@ -44,17 +44,9 @@ if ASYNC is non-nil, runs asynchronously"
   (or (cdr (assoc indicator place :test #'equal))
       default))
 
-;; probably change this to use tooter client obj
 (defun get-mastodon-streaming-url ()
   "gets the websocket url for the mastodon instance"
-  (handler-case
-      (agetf
-       (agetf (json:decode-json-from-string
-	       (dex:get (format nil "~a/api/v1/instance"
-				(add-scheme (config :mastodon-instance)))))
-	      :urls)
-       :streaming--api)
-    (error (e) (error "unexpected error occurred"))))
+  (gethash "streaming_api" (tooter:urls (tooter:instance (bot-client *bot*)))))
 
 (defun print-open ()
   "prints a message when the websocket is connected"
