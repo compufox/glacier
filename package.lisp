@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:glacier
-  (:use #:cl #:with-user-abort)
+  (:use #:cl)
   (:import-from :simple-config
 		:load-config
 		:config)

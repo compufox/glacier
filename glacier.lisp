@@ -8,26 +8,24 @@
   "runs BOT, setting up websocket handlers and starting the streaming connection before executing BODY
 
 if BODY is not provided drops into a loop where we sleep until the user quits us, or our connection closes"
-  `(handler-case
-       (with-user-abort
-	 (setf *bot* ,bot)
-	 (let ((*websocket-client* (wsd:make-client (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
-							    (get-mastodon-streaming-url)
-							    (config :mastodon-token)
-							    (config :timeline "user")))))
-	   (wsd:on :open *websocket-client* #'print-open)
-	   (wsd:on :message *websocket-client* #'dispatch)
-	   (wsd:on :close *websocket-client* #'print-close)
-	   (wsd:start-connection *websocket-client*)
-	
-	   ,@(if body
-		 body
-		 '((loop do (sleep 5)
-		        while (eq (wsd:ready-state *websocket-client*) :open))))))
-     (user-abort ()
-       (format t "shutting down~%"))
-     (error (e)
-       (format t "encountered unexpected error: ~A~%" e))))
+  `(progn
+     (setf *bot* ,bot)
+     (let ((*websocket-client* (wsd:make-client (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
+							(get-mastodon-streaming-url)
+							(config :mastodon-token)
+							(config :timeline "user")))))
+       ;; remove any listeners, just in case ;p
+       (wsd:remove-all-listeners *websocket-client*)
+       
+       (wsd:on :open *websocket-client* #'print-open)
+       (wsd:on :message *websocket-client* #'dispatch)
+       (wsd:on :close *websocket-client* #'print-close)
+       (wsd:start-connection *websocket-client*)
+       
+       ,@(if body
+	     body
+	   '((loop do (sleep 5)
+		   while (eq (wsd:ready-state *websocket-client*) :open)))))))
 
 (defun dispatch (message)
   "gets the type of MESSAGE we received and calls the appropriate functions on our bot with the proper tooter object"

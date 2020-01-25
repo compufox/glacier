@@ -5,10 +5,9 @@
   :author "ava fox"
   :license  "BSD 3-Clause"
   :version "0.2"
-  :depends-on (#:dexador #:bordeaux-threads
-	       #:websocket-driver #:simple-config
-	       #:with-user-abort #:cl-json
-	       #:tooter #:cl-ppcre #:str)
+  :depends-on (#:dexador #:bordeaux-threads #:str
+	       #:websocket-driver #:simple-config #:cl-json
+	       #:tooter #:cl-ppcre)
   :serial t
   :components ((:file "package")
 	       (:file "bot")
