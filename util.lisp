@@ -31,11 +31,13 @@ if ASYNC is non-nil, runs asynchronously"
 	  (lambda () ,@code))
 	`(progn ,@code))))
 
-(defmacro after-every ((amount duration &key async) &body body)
+(defmacro after-every ((amount duration &key async run-immediately) &body body)
   "runs BODY after every AMOUNT of DURATION
 
-if ASYNC is non-nil, runs asynchronously"
-  (let ((code `(loop do (sleep (parse-time ,amount ,duration))
+if ASYNC is non-nil, runs asynchronously
+if RUN-IMMEDIATELY is non-nil, runs BODY once before waiting for next invocation"
+  (let ((code `(loop ,@(when run-immediately `(initially ,@body))
+		     do (sleep (parse-time ,amount ,duration))
 		     ,@body)))
     (if async
 	`(bt:make-thread

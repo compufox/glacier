@@ -86,9 +86,11 @@ if ASYNC is non-nil runs asynchronously
 
 ---
 
-`after-every ((amount duration &key async) &body body)`
+`after-every ((amount duration &key async run-immediately) &body body)`
 
 same as AFTER except repeats after every duration
+
+if RUN-IMMEDIATELY is non-nil, executes BODY once before waiting for the next iteration
 
 ---
 
