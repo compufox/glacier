@@ -26,6 +26,10 @@
   "checks account found in MENTION to see if they have NoBot set"
   (no-bot-p (tooter:find-account (bot-client *bot*) (tooter:id mention))))
 
+(defmethod tooter:find-account ((client tooter:client) (id string))
+  "because the api/objects return ID as strings, but tooter expects ID to be an integer"
+  (tooter:find-account client (parse-integer id)))
+
 (defmethod tooter:find-status ((client tooter:client) (id string))
   "because the api/objects return ID as strings, but tooter expects ID to be an integer"
   (tooter:find-status client (parse-integer id)))
