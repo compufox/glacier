@@ -24,4 +24,6 @@
 	   :follow-p
            :boost-p
 	   :fave-p
-	   :mention-p))
+	   :mention-p
+	   :delete-parent
+	   :bot-post-p))

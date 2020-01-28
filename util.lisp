@@ -107,3 +107,13 @@ FUNCTION should be a function that accepts a single parameter (a tooter:status o
 
 (defun follow-p (notification)
   (eq (tooter:kind notification) :follow))
+
+(defun bot-post-p (status)
+  "checks if STATUS was posted by the bot"
+  (equal (bot-account-id *bot*) (tooter:id (tooter:account status))))
+
+(defun delete-parent (status)
+  "deletes the parent post of STATUS if it was posted by the bot"
+  (let ((parent (tooter:find-status (bot-client *bot*) (tooter:in-reply-to-id status))))
+    (when (bot-post-p parent)
+      (tooter:delete-status (bot-client *bot*) parent))))

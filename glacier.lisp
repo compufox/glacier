@@ -10,6 +10,10 @@
 if BODY is not provided drops into a loop where we sleep until the user quits us, or our connection closes"
   `(progn
      (setf *bot* ,bot)
+
+     ;; so the bot owner can have the bot delete a post easily, by default
+     (add-command "delete" #'delete-parent :privileged t)
+     
      (let ((*websocket-client* (wsd:make-client (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
 							(get-mastodon-streaming-url)
 							(config :mastodon-token)
