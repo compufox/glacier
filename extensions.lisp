@@ -18,6 +18,10 @@
 			     collect (or (cl-ppcre:scan *no-bot-regex* f)
 					 (cl-ppcre:scan *no-bot-regex* v))))))
 
+(defmethod tooter:find-status ((client tooter:client) (id string))
+  "because the api/objects return ID as strings, but tooter expects ID to be an integer"
+  (tooter:find-status client (parse-integer id)))
+
 (defmethod reply ((status tooter:status) text &key include-mentions media cw sensitive visibility)
   "replies to a STATUS with TEXT. copies the visibility and content warning as the post it's replying to
 
@@ -49,7 +53,7 @@ see documentation for that function"
 		      :media media
 		      :sensitive sensitive))
 
-;; strips out html tags if we have that set in our config
+;; strips out html-tags/bot-username if we have that set in our config
 (defmethod tooter:decode-entity :after ((status tooter:status) data)
   (when (config :strip-html t)
     (setf (tooter:content status) (tooter:plain-format-html (tooter:content status))))
