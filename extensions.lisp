@@ -7,6 +7,10 @@
 (defvar *no-bot-regex* "(?i)#?NoBot"
   "regex to check for the NoBot tag")
 
+(defmethod no-bot-p ((id string))
+  "checks an account's bio and profile fields to see if they contain a NoBot tag"
+  (no-bot-p (parse-integer id)))
+
 (defmethod no-bot-p ((id integer))
   "checks an account's bio and profile fields to see if they contain a NoBot tag"
   (no-bot-p (tooter:find-account (bot-client *bot*) id)))
@@ -18,6 +22,10 @@
 			     collect (or (cl-ppcre:scan *no-bot-regex* f)
 					 (cl-ppcre:scan *no-bot-regex* v))))))
 
+(defmethod no-bot-p ((mention tooter:mention))
+  "checks account found in MENTION to see if they have NoBot set"
+  (no-bot-p (tooter:find-account (bot-client *bot*) (tooter:id mention))))
+
 (defmethod tooter:find-status ((client tooter:client) (id string))
   "because the api/objects return ID as strings, but tooter expects ID to be an integer"
   (tooter:find-status client (parse-integer id)))
@@ -28,9 +36,11 @@
 if INCLUDE-MENTIONS is non-nil, include mentions besides the primary account being replied to"
   (let* ((client (bot-client *bot*))
 	 (reply-account (tooter:account status))
-	 (reply-mentions (loop for mention in (tooter:mentions status)
-			    unless (string= (tooter::account-name mention)
-					    (tooter::account-name reply-account))
+	 (reply-mentions (loop for mention in (remove (tooter:id reply-account)
+						      (tooter:mentions status)
+						      :test #'equal :key #'tooter:id)
+			    unless (no-bot-p mention)
+					
 			    collect (concatenate 'string "@" (tooter::account-name mention)))))
     (tooter:make-status client (str:join " "
 					 `(,(concatenate 'string "@" (tooter::account-name reply-account))

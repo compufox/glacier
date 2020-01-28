@@ -15,10 +15,10 @@
 	   :after
 	   :post
 	   :reply
-	   :no-bot-p
 	   :add-command
            :agetf
-	   
+
+	   :no-bot-p
 	   :follow-request-p
            :poll-ended-p
 	   :follow-p
