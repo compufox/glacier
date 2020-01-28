@@ -31,6 +31,8 @@ run that code along with monitoring for streaming updates
 
 see below for good examples
 
+most objects that get passed around are [tooter objects](https://shinmera.github.io/tooter), so it probably wouldnt hurt to get acquainted with that library.
+
 ## Examples
 
 the following runs a bot (using the instance and access token specified in the config)
