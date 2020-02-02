@@ -20,6 +20,7 @@
 	   :add-command
            :agetf
 
+	   :*command-prefix*
 	   :no-bot-p
 	   :follow-request-p
            :poll-ended-p
