@@ -184,6 +184,14 @@ for the command to be triggered
 
 ---
 
+`*command-prefix*`
+
+the string that prefixes commands. 
+
+defaults to "!"
+
+---
+
 ## License
 
 BSD 3-Clause

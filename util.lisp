@@ -72,7 +72,7 @@ if RUN-IMMEDIATELY is non-nil, runs BODY once before waiting for next invocation
 
 (defun commandp (word)
   "checks if WORD is a command"
-  (str:starts-with-p "!" word))
+  (str:starts-with-p *command-prefix*  word))
 
 (defun add-command (cmd function &key privileged)
   "adds a command into our hash
