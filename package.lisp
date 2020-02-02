@@ -5,6 +5,8 @@
   (:import-from :simple-config
 		:load-config
 		:config)
+  (:import-from :alexandria
+		:hash-table-keys)
   (:export :run-bot
 	   :mastodon-bot
 	   :bot-on-update

@@ -72,16 +72,21 @@ if RUN-IMMEDIATELY is non-nil, runs BODY once before waiting for next invocation
 
 (defun commandp (word)
   "checks if WORD is a command"
-  (str:starts-with-p *command-prefix*  word))
+  (or (member word (hash-table-keys *commands*) :test #'equal)
+      (member word (hash-table-keys *privileged-commands*) :test #'equal)))
 
-(defun add-command (cmd function &key privileged)
+(defun add-command (cmd function &key privileged add-prefix)
   "adds a command into our hash
 
 CMD should be a string
 FUNCTION should be a function that accepts a single parameter (a tooter:status object)"
-  (setf (gethash cmd (if privileged
-			 *privileged-commands*
-			 *commands*)) function))
+  (setf (gethash (if add-prefix
+		     (concatenate 'string *command-prefix* cmd)
+		     cmd)
+		 (if privileged
+		     *privileged-commands*
+		     *commands*))
+	function))
 
 (defun privileged-reply-p (status)
   "returns T if STATUS is from an account that the bot follows"
