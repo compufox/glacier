@@ -25,7 +25,7 @@ run that code along with monitoring for streaming updates
 
 ```lisp
 ;; bad example
-(glacier:run-bot my-bot
+(glacier:run-bot (my-bot)
   (format t "my bot is running!")) ;; this doesn't block, so we print this and exit
 ```
 
@@ -41,7 +41,7 @@ that posts "trans rights are human rights" every 30 minutes
 please see the example config for option names
 
 ```lisp
-(glacier:run-bot (make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config")
+(glacier:run-bot ((make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config"))
   (glacier:after-every (30 :minutes)
     (glacier:post "trans rights are human rights" :visibility :public)))
 ```
@@ -54,8 +54,8 @@ the following runs a bot that responds to a mention with a cordial hello
   (when (glacier:mention-p notification)
     (glacier:reply (tooter:status notification) "hi! :3")))
 
-(glacier:run-bot (make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config"
-                                                      :on-notification #'maybe-respond))
+(glacier:run-bot ((make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config"
+                                                      :on-notification #'maybe-respond)))
 ```
 
 the following runs a bot that will respond to posts with `!hello` in 
@@ -68,12 +68,70 @@ them with status personalized with their displayname
 
 (glacier:add-command "hello" #'cordial-reply)
 
-(glacier:run-bot (make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config"))
+(glacier:run-bot ((make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config")))
 ```
 
-## Helper Functions
+## API
 
-`after ((amount duration &key async) &body body))`
+`run-bot ((bot &key delete-command) &body body)`
+
+run BOT, optionally executing BODY if it was passed
+
+if DELETE-COMMAND is non-nil, a command to delete any post the bot makes gets automatically added
+
+if BODY is not provided, it drops into a loop where it sleeps until the user quits us, or our connection closes
+
+---
+
+`mention-p (notification)`
+
+returns T if NOTIFICATION is a mention
+
+---
+
+`fave-p (notification)`
+
+returns T if NOTIFICATION is a favourite
+
+---
+
+`boost-p (notification)`
+
+returns T if NOTIFICATION is a boost
+
+---
+
+`poll-ended-p (notification)`
+
+returns T if NOTIFICATION is from a poll ending
+
+---
+
+`follow-request-p (notification)`
+
+returns T if NOTIFICATION is a follow-request
+
+---
+
+`follow-p (notification)`
+
+returns T if NOTIFICATION is a follow
+
+---
+
+`bot-post-p (status)`
+
+returns T if STATUS was posted by the bot
+
+---
+
+`delete-parent (status)`
+
+deletes the parent to STATUS if it was made by the bot
+
+---
+
+`after ((amount duration &key async) &body body)`
 
 runs BODY after AMOUNT of DURATION time has passed
 

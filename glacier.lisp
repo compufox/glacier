@@ -4,15 +4,18 @@
 
 (defvar *bot*)
 
-(defmacro run-bot (bot &body body)
+(defmacro run-bot ((bot &key delete-command) &body body)
   "runs BOT, setting up websocket handlers and starting the streaming connection before executing BODY
+
+if DELETE-COMMAND is non-nil, automatically adds a delete command
 
 if BODY is not provided drops into a loop where we sleep until the user quits us, or our connection closes"
   `(progn
      (setf *bot* ,bot)
 
      ;; so the bot owner can have the bot delete a post easily, by default
-     (add-command "delete" #'delete-parent :privileged t)
+     (when ,delete-command
+       (add-command "delete" #'delete-parent :privileged t))
      
      (let ((*websocket-client* (wsd:make-client (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
 							(get-mastodon-streaming-url)
