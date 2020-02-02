@@ -55,12 +55,12 @@ if RUN-IMMEDIATELY is non-nil, runs BODY once before waiting for next invocation
 
 (defun print-open ()
   "prints a message when the websocket is connected"
-  (print "websocket connected"))
+  (print "connected"))
 
 (defun print-close (&key code reason)
   "prints a message when the websocket is closed"
   (when (and code reason)
-    (format t "websocket closed because ~A (code=~A)~%" reason code)))
+    (format t "disconnected because ~A (code=~A)~%" reason code)))
 
 (defun add-scheme (domain)
   "adds https scheme to DOMAIN if it isnt already there"
