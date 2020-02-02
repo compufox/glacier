@@ -79,7 +79,10 @@ if RUN-IMMEDIATELY is non-nil, runs BODY once before waiting for next invocation
   "adds a command into our hash
 
 CMD should be a string
-FUNCTION should be a function that accepts a single parameter (a tooter:status object)"
+FUNCTION should be a function that accepts a single parameter (a tooter:status object)
+
+if PRIVILEGED is non-nil, command will only be triggered if mention is sent by an account the bot is following
+if ADD-PREFIX is non-nil, adds *COMMAND-PREFIX* to the front of CMD"
   (setf (gethash (if add-prefix
 		     (concatenate 'string *command-prefix* cmd)
 		     cmd)
