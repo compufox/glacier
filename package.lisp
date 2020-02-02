@@ -20,6 +20,7 @@
 	   :add-command
            :agetf
 
+	   :terminate-connection
 	   :*command-prefix*
 	   :no-bot-p
 	   :follow-request-p

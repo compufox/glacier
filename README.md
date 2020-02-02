@@ -194,6 +194,14 @@ defaults to "!"
 
 ---
 
+`terminate-connection`
+
+terminates the websocket connection that feeds the bot streaming updates
+
+effectively terminates the bot
+
+---
+
 ## License
 
 BSD 3-Clause

@@ -3,6 +3,7 @@
 (in-package #:glacier)
 
 (defvar *bot*)
+(defvar *websocket-client*)
 
 (defmacro run-bot ((bot &key delete-command) &body body)
   "runs BOT, setting up websocket handlers and starting the streaming connection before executing BODY
@@ -11,28 +12,30 @@ if DELETE-COMMAND is non-nil, automatically adds a delete command
 
 if BODY is not provided drops into a loop where we sleep until the user quits us, or our connection closes"
   `(progn
-     (setf *bot* ,bot)
+     (setf *bot* ,bot
+	   *websocket-client* (wsd:make-client
+			       (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
+				       (get-mastodon-streaming-url)
+				       (config :mastodon-token)
+				       (config :timeline "user"))))
 
      ;; so the bot owner can have the bot delete a post easily, by default
      (when ,delete-command
        (add-command "delete" #'delete-parent :privileged t))
-     
-     (let ((*websocket-client* (wsd:make-client (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
-							(get-mastodon-streaming-url)
-							(config :mastodon-token)
-							(config :timeline "user")))))
-       ;; remove any listeners, just in case ;p
-       (wsd:remove-all-listeners *websocket-client*)
        
-       (wsd:on :open *websocket-client* #'print-open)
-       (wsd:on :message *websocket-client* #'dispatch)
-       (wsd:on :close *websocket-client* #'print-close)
-       (wsd:start-connection *websocket-client*)
+     (wsd:on :open *websocket-client* #'print-open)
+     (wsd:on :message *websocket-client* #'dispatch)
+     (wsd:on :close *websocket-client* #'print-close)
+     (wsd:start-connection *websocket-client*)
        
-       ,@(if body
-	     body
+     ,@(if body
+	   body
 	   '((loop do (sleep 5)
-		   while (eq (wsd:ready-state *websocket-client*) :open)))))))
+		   while (eq (wsd:ready-state *websocket-client*) :open))))
+
+     ;; remove any listeners once the provided code is finished executing;p
+     (when *websocket-client*
+       (terminate-connection))))
 
 (defun dispatch (message)
   "gets the type of MESSAGE we received and calls the appropriate functions on our bot with the proper tooter object"
@@ -90,3 +93,9 @@ if STATUS comes from an account the bot is following, also checks for any comman
 	  ;; if we've hit here we return t, just so the calling function knows
 	  ;;  that we actually did something
 	  t)))))
+
+
+(defun terminate-connection ()
+  "closes the websocket connection and clears the variable from memory"
+  (wsd:remove-all-listeners *websocket-client*)
+  (setf *websocket-client* nil))
