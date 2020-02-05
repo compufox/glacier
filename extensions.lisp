@@ -7,6 +7,89 @@
 (defvar *no-bot-regex* "(?i)#?NoBot"
   "regex to check for the NoBot tag")
 
+(defun api-request (fragment &optional result-type)
+  "perform an API request
+
+FRAGMENT is the fragment of the url that goes AFTER api/v1/
+RESULT-TYPE (if provided) is the object type that we should use when parsing the response
+can be either a symbol ('account) or list '(:list account)
+
+if it is a list then we decode the response and collect and return them as a list"
+  (let ((client (bot-client *bot*)))
+    (multiple-value-bind (response headers)
+	(tooter:request (concatenate 'string
+				     (tooter:base client)
+				     "/api/v1/"
+				     fragment)
+			:headers `(("Authorization" . ,(concatenate 'string
+								    "Bearer "
+								    (tooter:access-token client)))))
+      (values
+       (if result-type
+	   (if (listp result-type)
+	       (loop for r in response
+		     collect (tooter:decode-entity
+			      (find-symbol (symbol-name (car (last result-type)))
+					   (find-package :tooter))
+			      r))
+	       (tooter:decode-entity result-type response))
+	   response)
+       headers))))
+
+(defmethod tooter:followed-by ((acct tooter:account))
+  "gets all accounts that are following ACCT"
+  (flatten
+   (loop with total = (tooter:followers-count acct)
+	 with count = 0
+	 with base-uri = (concatenate 'string
+				      "accounts/"
+				      (tooter:id acct)
+				      "/followers")
+	 with next = ""
+	 
+	 until (or (>= count total)
+		   (null next))
+	 
+	 collect (multiple-value-bind (accts headers)
+		     (api-request (concatenate 'string base-uri next)
+				  '(:list account))
+		   (incf count (length accts))
+		   (setf next (when (and (agetf headers :link)
+					 (str:containsp "max_id" (agetf headers :link)))
+				(subseq (first (str:split ">;" (agetf headers :link)))
+					(search "?" (agetf headers :link) :test #'string=))))
+		   accts))))
+
+(defmethod tooter:followed-by ((client tooter:client))
+  (tooter:followed-by (tooter:account client)))
+
+(defmethod tooter:following ((acct tooter:account))
+  "gets all accounts that ACCT is following"
+  (flatten
+   (loop with total = (tooter:following-count acct)
+	 with count = 0
+	 with base-uri = (concatenate 'string
+				      "accounts/"
+				      (tooter:id acct)
+				      "/following")
+	 with next = ""
+	 
+	 until (or (= total count)
+		   (null next))
+	 
+	 collect (multiple-value-bind (accts headers)
+		     (api-request (concatenate 'string base-uri next)
+				  '(:list account))
+		   (incf count (length accts))
+		   (setf next (when (and (agetf headers :link)
+					 (str:containsp "max_id" (agetf headers :link)))
+				(subseq (first (str:split ">;" (agetf headers :link)))
+					(search "?" (agetf headers :link) :test #'string=))))
+		   accts))))
+
+(defmethod tooter:following ((client tooter:client))
+  (tooter:following (tooter:account client)))
+
 (defmethod no-bot-p ((id string))
   "checks an account's bio and profile fields to see if they contain a NoBot tag"
   (no-bot-p (parse-integer id)))

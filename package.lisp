@@ -6,7 +6,8 @@
 		:load-config
 		:config)
   (:import-from :alexandria
-		:hash-table-keys)
+		:hash-table-keys
+		:flatten)
   (:export :run-bot
 	   :mastodon-bot
 	   :bot-on-update
