@@ -20,7 +20,7 @@
 	   :reply
 	   :add-command
            :agetf
-
+           :bot-client
 	   :terminate-connection
 	   :*command-prefix*
 	   :no-bot-p
