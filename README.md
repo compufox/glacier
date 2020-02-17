@@ -73,13 +73,16 @@ them with status personalized with their displayname
 
 ## API
 
-`run-bot ((bot &key delete-command) &body body)`
+`run-bot ((bot &key delete-command (with-websocket t)) &body body)`
 
-run BOT, optionally executing BODY if it was passed
+runs BOT, setting up websocket handlers and starting the streaming connection before executing BODY
 
-if DELETE-COMMAND is non-nil, a command to delete any post the bot makes gets automatically added
+if DELETE-COMMAND is non-nil, automatically adds a delete command
+if WITH-WEBSOCKET is non-nil (default), automatically starts up a websocket listener for realtime updates
 
-if BODY is not provided, it drops into a loop where it sleeps until the user quits us, or our connection closes
+NOTE: DELETE-COMMAND is ignored used if WITH-WEBSOCKET is nil
+
+if BODY is not provided drops into a loop where we sleep until the user quits us, or our connection closes. this functionality does not happen if WITH-WEBSOCKET is nil.
 
 ---
 

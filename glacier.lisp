@@ -5,33 +5,42 @@
 (defvar *bot*)
 (defvar *websocket-client*)
 
-(defmacro run-bot ((bot &key delete-command) &body body)
+(defmacro run-bot ((bot &key delete-command (with-websocket t)) &body body)
   "runs BOT, setting up websocket handlers and starting the streaming connection before executing BODY
 
 if DELETE-COMMAND is non-nil, automatically adds a delete command
+if WITH-WEBSOCKET is non-nil (default), automatically starts up a websocket listener for realtime updates
 
-if BODY is not provided drops into a loop where we sleep until the user quits us, or our connection closes"
+NOTE: DELETE-COMMAND is ignored used if WITH-WEBSOCKET is nil
+
+if BODY is not provided drops into a loop where we sleep until the user quits us, or our connection closes. this functionality does not happen if WITH-WEBSOCKET is nil."
   `(progn
-     (setf *bot* ,bot
-	   *websocket-client* (wsd:make-client
-			       (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
-				       (get-mastodon-streaming-url)
-				       (config :mastodon-token)
-				       (config :timeline "user"))))
+     (setf *bot* ,bot)
 
-     ;; so the bot owner can have the bot delete a post easily, by default
-     (when ,delete-command
-       (add-command "delete" #'delete-parent :privileged t))
+     (when ,with-websocket
+       (setf *websocket-client* (wsd:make-client
+				 (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
+					 (get-mastodon-streaming-url)
+					 (config :mastodon-token)
+					 (config :timeline "user"))))
+
+       ;; so the bot owner can have the bot delete a post easily, by default
+       ;; this option is only used if we're using the websocket client
+       (when ,delete-command
+	 (add-command "delete" #'delete-parent :privileged t))
        
-     (wsd:on :open *websocket-client* #'print-open)
-     (wsd:on :message *websocket-client* #'dispatch)
-     (wsd:on :close *websocket-client* #'print-close)
-     (wsd:start-connection *websocket-client*)
+       (wsd:on :open *websocket-client* #'print-open)
+       (wsd:on :message *websocket-client* #'dispatch)
+       (wsd:on :close *websocket-client* #'print-close)
+       (wsd:start-connection *websocket-client*))
        
      ,@(if body
 	   body
-	   '((loop do (sleep 5)
-		   while (eq (wsd:ready-state *websocket-client*) :open))))
+	   
+	   ;; only drop into this loop when we are using a websocket
+	   (when with-websocket
+	     '((loop do (sleep 5)
+		  while (eq (wsd:ready-state *websocket-client*) :open)))))
 
      ;; remove any listeners once the provided code is finished executing;p
      (when *websocket-client*
