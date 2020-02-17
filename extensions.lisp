@@ -36,60 +36,6 @@ if it is a list then we decode the response and collect and return them as a lis
 	   response)
        headers))))
 
-(defmethod tooter:followed-by ((acct tooter:account))
-  "gets all accounts that are following ACCT"
-  (flatten
-   (loop with total = (tooter:followers-count acct)
-	 with count = 0
-	 with base-uri = (concatenate 'string
-				      "accounts/"
-				      (tooter:id acct)
-				      "/followers")
-	 with next = ""
-	 
-	 until (or (>= count total)
-		   (null next))
-	 
-	 collect (multiple-value-bind (accts headers)
-		     (api-request (concatenate 'string base-uri next)
-				  '(:list account))
-		   (incf count (length accts))
-		   (setf next (when (and (agetf headers :link)
-					 (str:containsp "max_id" (agetf headers :link)))
-				(subseq (first (str:split ">;" (agetf headers :link)))
-					(search "?" (agetf headers :link) :test #'string=))))
-		   accts))))
-
-(defmethod tooter:followed-by ((client tooter:client))
-  (tooter:followed-by (tooter:account client)))
-
-(defmethod tooter:following ((acct tooter:account))
-  "gets all accounts that ACCT is following"
-  (flatten
-   (loop with total = (tooter:following-count acct)
-	 with count = 0
-	 with base-uri = (concatenate 'string
-				      "accounts/"
-				      (tooter:id acct)
-				      "/following")
-	 with next = ""
-	 
-	 until (or (= total count)
-		   (null next))
-	 
-	 collect (multiple-value-bind (accts headers)
-		     (api-request (concatenate 'string base-uri next)
-				  '(:list account))
-		   (incf count (length accts))
-		   (setf next (when (and (agetf headers :link)
-					 (str:containsp "max_id" (agetf headers :link)))
-				(subseq (first (str:split ">;" (agetf headers :link)))
-					(search "?" (agetf headers :link) :test #'string=))))
-		   accts))))
-
-(defmethod tooter:following ((client tooter:client))
-  (tooter:following (tooter:account client)))
-
 (defmethod no-bot-p ((id string))
   "checks an account's bio and profile fields to see if they contain a NoBot tag"
   (no-bot-p (parse-integer id)))
