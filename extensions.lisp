@@ -43,9 +43,12 @@ if it is a list then we decode the response and collect and return them as a lis
 (defmethod no-bot-p ((account tooter:account))
   "checks an account's bio and profile fields to see if they contain a NoBot tag"
   (or (cl-ppcre:scan *no-bot-regex* (tooter:note account))
-      (some #'identity (loop for (f . v) in (tooter:fields account)
-			     collect (or (cl-ppcre:scan *no-bot-regex* f)
-					 (cl-ppcre:scan *no-bot-regex* v))))))
+      (loop for field in (tooter:fields account)
+            for name = (tooter:name field)
+            for value = (tooter::value field)
+	    when (or (cl-ppcre:scan *no-bot-regex* name)
+                     (cl-ppcre:scan *no-bot-regex* value))
+            collect field)))
 
 (defmethod no-bot-p ((mention tooter:mention))
   "checks account found in MENTION to see if they have NoBot set"
