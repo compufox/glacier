@@ -38,30 +38,21 @@ if it is a list then we decode the response and collect and return them as a lis
 
 (defmethod no-bot-p ((id string))
   "checks an account's bio and profile fields to see if they contain a NoBot tag"
-  (no-bot-p (parse-integer id)))
-
-(defmethod no-bot-p ((id integer))
-  "checks an account's bio and profile fields to see if they contain a NoBot tag"
   (no-bot-p (tooter:find-account (bot-client *bot*) id)))
 
 (defmethod no-bot-p ((account tooter:account))
   "checks an account's bio and profile fields to see if they contain a NoBot tag"
   (or (cl-ppcre:scan *no-bot-regex* (tooter:note account))
-      (some #'identity (loop for (f . v) in (tooter:fields account)
-			     collect (or (cl-ppcre:scan *no-bot-regex* f)
-					 (cl-ppcre:scan *no-bot-regex* v))))))
+      (loop for field in (tooter:fields account)
+            for name = (tooter:name field)
+            for value = (tooter::value field)
+	    when (or (cl-ppcre:scan *no-bot-regex* name)
+                     (cl-ppcre:scan *no-bot-regex* value))
+            collect field)))
 
 (defmethod no-bot-p ((mention tooter:mention))
   "checks account found in MENTION to see if they have NoBot set"
   (no-bot-p (tooter:find-account (bot-client *bot*) (tooter:id mention))))
-
-(defmethod tooter:find-account ((client tooter:client) (id string))
-  "because the api/objects return ID as strings, but tooter expects ID to be an integer"
-  (tooter:find-account client (parse-integer id)))
-
-(defmethod tooter:find-status ((client tooter:client) (id string))
-  "because the api/objects return ID as strings, but tooter expects ID to be an integer"
-  (tooter:find-status client (parse-integer id)))
 
 (defmethod reply ((status tooter:status) text &key include-mentions media cw sensitive visibility)
   "replies to a STATUS with TEXT. copies the visibility and content warning as the post it's replying to
