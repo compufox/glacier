@@ -75,14 +75,14 @@ if RUN-IMMEDIATELY is non-nil, runs BODY once before waiting for next invocation
   (or (member word (hash-table-keys *commands*) :test #'equal)
       (member word (hash-table-keys *privileged-commands*) :test #'equal)))
 
-(defun add-command (cmd function &key privileged add-prefix)
+(defun add-command (cmd function &key privileged (add-prefix t))
   "adds a command into our hash
 
 CMD should be a string
 FUNCTION should be a function that accepts a single parameter (a tooter:status object)
 
 if PRIVILEGED is non-nil, command will only be triggered if mention is sent by an account the bot is following
-if ADD-PREFIX is non-nil, adds *COMMAND-PREFIX* to the front of CMD"
+if ADD-PREFIX is non-nil, adds *COMMAND-PREFIX* to the front of CMD (defaults to t)"
   (setf (gethash (if add-prefix
 		     (concatenate 'string *command-prefix* cmd)
 		     cmd)
