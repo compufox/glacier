@@ -17,22 +17,22 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
   `(progn
      (setf *bot* ,bot)
 
-     (when ,with-websocket
-       (setf *websocket-client* (wsd:make-client
-				 (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
-					 (get-mastodon-streaming-url)
-					 (config :mastodon-token)
-					 (config :timeline "user"))))
+     ,@(when with-websocket
+	 `((setf *websocket-client* (wsd:make-client
+				     (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
+					     (get-mastodon-streaming-url)
+					     (config :mastodon-token)
+					     (config :timeline "user"))))
 
-       ;; so the bot owner can have the bot delete a post easily, by default
-       ;; this option is only used if we're using the websocket client
-       (when ,delete-command
-	 (add-command "delete" #'delete-parent :privileged t))
+	   ;; so the bot owner can have the bot delete a post easily, by default
+	   ;; this option is only used if we're using the websocket client
+	   ,(when delete-command
+	      '(add-command "delete" #'delete-parent :privileged t))
        
-       (wsd:on :open *websocket-client* #'print-open)
-       (wsd:on :message *websocket-client* #'dispatch)
-       (wsd:on :close *websocket-client* #'print-close)
-       (wsd:start-connection *websocket-client*))
+	   (wsd:on :open *websocket-client* #'print-open)
+	   (wsd:on :message *websocket-client* #'dispatch)
+	   (wsd:on :close *websocket-client* #'print-close)
+	   (wsd:start-connection *websocket-client*)))
        
      ,@(if body
 	   body
@@ -55,7 +55,7 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
       ((and (string= (agetf parsed :event) "update")
 	    (slot-boundp *bot* 'on-update))
        (funcall (bot-on-update *bot*) 
-		(tooter:find-status (bot-client *bot*) (agetf parsed-payload :id))))
+		(tooter:find-status (bot-client *bot*) (parse-integer (agetf parsed-payload :id)))))
       
       ((and (string= (agetf parsed :event) "delete")
 	    (slot-boundp *bot* 'on-delete))
@@ -66,7 +66,7 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
        ;; we go ahead and get the notification object through tooter
        ;;  for ease of parsing, plus we were gonna get it anyway so
        ;;   :shrug:
-       (let ((notif (tooter:find-notification (bot-client *bot*) (agetf parsed-payload :id))))
+       (let ((notif (tooter:find-notification (bot-client *bot*) (parse-integer (agetf parsed-payload :id)))))
 	 (if (and
 	      ;; just some trickery to ensure that if we get a mention, to run
 	      ;;  our command dispatch.
