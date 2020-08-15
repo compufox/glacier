@@ -1,5 +1,8 @@
 (in-package #:glacier)
 
+(declaim (inline fave-p boost-p mention-p follow-p poll-ended-p
+		 follow-request-p bot-post-p agetf))
+
 (defun parse-time (amount duration)
   "parses AMOUNT of DURATION into seconds"
   (* amount (cond
