@@ -2,8 +2,8 @@
 
 (in-package #:glacier)
 
-(defvar *bot*)
-(defvar *websocket-client*)
+(defvar *websocket-client* nil
+  "global websocket client")
 
 (defmacro run-bot ((bot &key delete-command (with-websocket t)) &body body)
   "runs BOT, setting up websocket handlers and starting the streaming connection before executing BODY

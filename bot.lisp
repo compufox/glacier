@@ -1,5 +1,8 @@
 (in-package #:glacier)
 
+(defvar *bot* nil
+  "global bot object")
+
 (defvar *commands* (make-hash-table :test #'equal)
   "hash table containing the bot's commands
 
