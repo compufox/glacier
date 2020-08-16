@@ -3,6 +3,8 @@
 (declaim (inline fave-p boost-p mention-p follow-p poll-ended-p
 		 follow-request-p bot-post-p agetf))
 
+(defvar *bot*)
+
 (defun parse-time (amount duration)
   "parses AMOUNT of DURATION into seconds"
   (* amount (cond

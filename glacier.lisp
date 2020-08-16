@@ -2,7 +2,6 @@
 
 (in-package #:glacier)
 
-(defvar *bot*)
 (defvar *websocket-client*)
 
 (defmacro run-bot ((bot &key delete-command (with-websocket t)) &body body)
