@@ -2,6 +2,8 @@
 
 (defpackage #:glacier
   (:use #:cl)
+  (:import-from :simple-flow-dispatcher
+		:make-simple-dispatcher)
   (:import-from :simple-config
 		:load-config
 		:config)

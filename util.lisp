@@ -3,6 +3,11 @@
 (declaim (inline fave-p boost-p mention-p follow-p poll-ended-p
 		 follow-request-p bot-post-p agetf))
 
+(defvar *dispatch-output* *standard-output*)
+(defvar *dispatcher* (make-simple-dispatcher :threads 5
+					     :error-handler #'(lambda (m)
+								(format *dispatch-output* m))))
+
 (defun parse-time (amount duration)
   "parses AMOUNT of DURATION into seconds"
   (* amount (cond
@@ -30,8 +35,9 @@ if ASYNC is non-nil, runs asynchronously"
   (let ((code `((sleep (parse-time ,amount ,duration))
 		,@body)))
     (if async
-	`(bt:make-thread
-	  (lambda () ,@code))
+	`(flow:run *dispatcher*
+		   (flow:atomically :default ()
+		     ,@code))
 	`(progn ,@code))))
 
 (defmacro after-every ((amount duration &key async run-immediately) &body body)
@@ -43,8 +49,9 @@ if RUN-IMMEDIATELY is non-nil, runs BODY once before waiting for next invocation
 		     do (sleep (parse-time ,amount ,duration))
 		     ,@body)))
     (if async
-	`(bt:make-thread
-	  (lambda () ,code))
+	`(flow:run *dispatcher*
+		   (flow:atomically :default ()
+		     ,code))
 	code)))
 
 (defun agetf (place indicator &optional default)
