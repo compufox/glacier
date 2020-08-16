@@ -55,7 +55,7 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
       ((and (string= (agetf parsed :event) "update")
 	    (slot-boundp *bot* 'on-update))
        (funcall (bot-on-update *bot*) 
-		(tooter:find-status (bot-client *bot*) (parse-integer (agetf parsed-payload :id)))))
+		(tooter:find-status (bot-client *bot*) (agetf parsed-payload :id))))
       
       ((and (string= (agetf parsed :event) "delete")
 	    (slot-boundp *bot* 'on-delete))
@@ -66,7 +66,7 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
        ;; we go ahead and get the notification object through tooter
        ;;  for ease of parsing, plus we were gonna get it anyway so
        ;;   :shrug:
-       (let ((notif (tooter:find-notification (bot-client *bot*) (parse-integer (agetf parsed-payload :id)))))
+       (let ((notif (tooter:find-notification (bot-client *bot*) (agetf parsed-payload :id))))
 	 (if (and
 	      ;; just some trickery to ensure that if we get a mention, to run
 	      ;;  our command dispatch.
