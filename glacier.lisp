@@ -16,35 +16,36 @@ NOTE: DELETE-COMMAND is ignored used if WITH-WEBSOCKET is nil
 if BODY is not provided drops into a loop where we sleep until the user quits us, or our connection closes. this functionality does not happen if WITH-WEBSOCKET is nil."
   `(progn
      (setf *bot* ,bot)
+     ;; no matter what, terminate the websocket connection (if it exists) after body/websocket loop
+     (unwind-protect
+          (progn ,@(when with-websocket
+                     `((setf *websocket-client* (wsd:make-client
+                                                 (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
+                                                         (get-mastodon-streaming-url)
+                                                         (config :mastodon-token)
+                                                         (config :timeline "user"))))
 
-     ,@(when with-websocket
-	 `((setf *websocket-client* (wsd:make-client
-				     (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
-					     (get-mastodon-streaming-url)
-					     (config :mastodon-token)
-					     (config :timeline "user"))))
+                       ;; so the bot owner can have the bot delete a post easily, by default
+                       ;; this option is only used if we're using the websocket client
+                       ,(when delete-command
+                          '(add-command "delete" #'delete-parent :privileged t))
 
-	   ;; so the bot owner can have the bot delete a post easily, by default
-	   ;; this option is only used if we're using the websocket client
-	   ,(when delete-command
-	      '(add-command "delete" #'delete-parent :privileged t))
-       
-	   (wsd:on :open *websocket-client* #'print-open)
-	   (wsd:on :message *websocket-client* #'dispatch)
-	   (wsd:on :close *websocket-client* #'print-close)
-	   (wsd:start-connection *websocket-client*)))
-       
-     ,@(if body
-	   body
-	   
-	   ;; only drop into this loop when we are using a websocket
-	   (when with-websocket
-	     '((loop do (sleep 5)
-		  while (eq (wsd:ready-state *websocket-client*) :open)))))
+                       (wsd:on :open *websocket-client* #'print-open)
+                       (wsd:on :message *websocket-client* #'dispatch)
+                       (wsd:on :close *websocket-client* #'print-close)
+                       (wsd:start-connection *websocket-client*)))
 
-     ;; remove any listeners once the provided code is finished executing;p
-     (when *websocket-client*
-       (terminate-connection))))
+                 ,@(if body
+                       body
+
+                       ;; only drop into this loop when we are using a websocket
+                       (when with-websocket
+                         '((loop do (sleep 5)
+                                 while (eq (wsd:ready-state *websocket-client*) :open))))))
+
+       ;; remove any listeners once the provided code is finished executing;p
+       (when *websocket-client*
+         (terminate-connection)))))
 
 (defun dispatch (message)
   "gets the type of MESSAGE we received and calls the appropriate functions on our bot with the proper tooter object"
@@ -106,5 +107,6 @@ if STATUS comes from an account the bot is following, also checks for any comman
 
 (defun terminate-connection ()
   "closes the websocket connection and clears the variable from memory"
+  (wsd:close-connection *websocket-client*)
   (wsd:remove-all-listeners *websocket-client*)
   (setf *websocket-client* nil))
