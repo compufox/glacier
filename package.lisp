@@ -16,6 +16,7 @@
 	   :bot-username
            :after-every
 	   :after
+           :on
 	   :post
 	   :reply
 	   :add-command

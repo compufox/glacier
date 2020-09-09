@@ -47,6 +47,71 @@ if RUN-IMMEDIATELY is non-nil, runs BODY once before waiting for next invocation
 	  (lambda () ,code))
 	code)))
 
+(defmacro on ((day &key at async) &body body)
+  "runs BODY on DAY, optionally AT a time, or ASYNChronously
+
+DAY is a keyword with the day of the week (e.g., :sunday, :monday, etc)
+AT is a string denoting a time (e.g., '13:20', '4:20PM', '23:00')
+if ASYNC is non-nil code is executed asynchronously"
+  (let ((code `(loop with wanted-dow = (get-dow-for ,day)
+                     with executed = nil
+
+                     do (loop for dow = (nth 6 (multiple-value-list (get-decoded-time)))
+                              unless (and (= dow wanted-dow)
+                                          (not executed))
+                                do (sleep (seconds-until-midnight))
+                                   (setf executed nil)
+                                   
+                              until (= dow wanted-dow))
+                        
+                     ,(when at `(sleep (seconds-until-timestring ,at)))
+                     (setf executed t)
+                     ,@body)))
+    (if async
+        `(bt:make-thread
+          (lambda () ,code))
+        code)))
+
+(defun get-dow-for (day)
+  "returns the day of the week for DAY"
+  (case day
+    (:sunday 6)
+    (:monday 0)
+    (:tuesday 1)
+    (:wednesday 2)
+    (:thursday 3)
+    (:friday 4)
+    (:saturday 5)))
+
+(defun seconds-until-midnight ()
+  "returns how many seconds until it's midnight"
+  (seconds-until 23 59 60))
+
+(defun seconds-until (hours minutes &optional (seconds 0))
+  "determines how many seconds until HOURS MINUTES and SECONDS
+if the time has already passed it returns 0 instead of a negative time"
+  (let* ((decoded (multiple-value-list (get-decoded-time)))
+         (hour (nth 2 decoded))
+         (minute (nth 1 decoded))
+         (second (nth 0 decoded))
+         (results (+ (parse-time (- hours hour) :hours)
+                     (parse-time (- minutes minute) :minutes)
+                     (- seconds second))))
+    (if (< results 0)
+        0
+        results)))
+
+(defun seconds-until-timestring (time-string)
+  "parses TIME-STRING and returns how long until the time specified
+TIME-STRING is of the form '12:04', '18:30', '1:10PM', etc"
+  (let* ((split-time (str:split ":" time-string))
+         (hours (parse-integer (first split-time)))
+         (minutes (parse-integer (second split-time) :junk-allowed t)))
+    (when (and (str:ends-with-p "PM" time-string)
+               (< hours 12))
+      (incf hours 12))
+    (+ (seconds-until hours minutes))))
+
 (defun agetf (place indicator &optional default)
   "getf but for alists"
   (or (cdr (assoc indicator place :test #'equal))
