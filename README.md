@@ -205,6 +205,20 @@ effectively terminates the bot
 
 ---
 
+`on ((day &key at async) &body body`
+
+runs BODY on DAY, optionally AT a time
+
+DAY is a keyword with the day of the week (e.g., :sunday, :monday, etc)
+
+AT is a string denoting a time (e.g., "13:20", "4:20PM", "23:00")
+
+if ASYNC is non-nil code is executed asynchronously
+
+if AT is nil, code is ran at midnight on DAY
+
+---
+
 ## License
 
 BSD 3-Clause
