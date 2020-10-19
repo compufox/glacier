@@ -61,7 +61,7 @@ if AT is nil, code is ran at midnight on DAY"
                      do (loop for dow = (nth 6 (multiple-value-list (get-decoded-time)))
                               unless (and (= dow wanted-dow)
                                           (not executed))
-                                do (sleep (seconds-until-midnight))
+                                do (sleep (1+ (seconds-until-midnight)))
                                    (setf executed nil)
                                    
                               until (= dow wanted-dow))
