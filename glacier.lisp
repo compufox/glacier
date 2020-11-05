@@ -22,8 +22,8 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
                      `((setf *websocket-client* (wsd:make-client
                                                  (format nil "~a/api/v1/streaming?access_token=~a&stream=~a"
                                                          (get-mastodon-streaming-url)
-                                                         (config :mastodon-token)
-                                                         (config :timeline "user"))))
+                                                         (config *bot-config* :mastodon-token)
+                                                         (config *bot-config* :timeline "user"))))
 
                        ;; so the bot owner can have the bot delete a post easily, by default
                        ;; this option is only used if we're using the websocket client

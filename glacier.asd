@@ -4,7 +4,7 @@
   :description "lightweight mastodon bot framework"
   :author "ava fox"
   :license  "BSD 3-Clause"
-  :version "0.3"
+  :version "0.3.1"
   :depends-on (#:dexador #:bordeaux-threads #:str
 	       #:websocket-driver #:simple-config #:cl-json
 	       #:tooter #:cl-ppcre #:alexandria)

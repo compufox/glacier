@@ -3,6 +3,9 @@
 (defvar *bot* nil
   "global bot object")
 
+(defvar *bot-config* nil
+  "config file loaded by simple-config")
+
 (defvar *commands* (make-hash-table :test #'equal)
   "hash table containing the bot's commands
 
@@ -38,10 +41,10 @@ VALUE is a function that accepts a tooter:status object as a parameter")
 
 (defmethod initialize-instance :after ((instance mastodon-bot) &rest initargs
 				       &key config-file &allow-other-keys)
-  (load-config config-file)
+  (setf *bot-config* (load-config config-file))
   (let* ((client (make-instance 'bot-client
-				:access-token (config :mastodon-token)
-				:base (add-scheme (config :mastodon-instance))))
+				:access-token (config *bot-config* :mastodon-token)
+				:base (add-scheme (config *bot-config* :mastodon-instance))))
 	 (account (tooter:verify-credentials client)))
     (setf (slot-value instance 'client) client
 	  (slot-value instance 'account-id) (tooter:id account)
