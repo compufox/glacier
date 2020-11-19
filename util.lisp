@@ -1,7 +1,8 @@
 (in-package #:glacier)
 
 (declaim (inline fave-p boost-p mention-p follow-p poll-ended-p
-		 follow-request-p bot-post-p agetf))
+		 follow-request-p bot-post-p agetf seconds-until-midnight
+                 current-day dow-for))
 
 (defun parse-time (amount duration)
   "parses AMOUNT of DURATION into seconds"
@@ -55,16 +56,11 @@ AT is a string denoting a time (e.g., '13:20', '4:20PM', '23:00')
 
 if ASYNC is non-nil code is executed asynchronously
 if AT is nil, code is ran at midnight on DAY"
-  (let ((code `(loop with wanted-dow = (get-dow-for ,day)
-                     with executed = nil
-
-                     do (loop for dow = (nth 6 (multiple-value-list (get-decoded-time)))
-                              unless (and (= dow wanted-dow)
-                                          (not executed))
-                                do (sleep (1+ (seconds-until-midnight)))
-                                   (setf executed nil)
-                                   
-                              until (= dow wanted-dow))
+  (let ((code `(loop with executed = nil
+                     do
+                        (loop until (and (= (current-day) (dow-for ,day)) (not executed))
+                              do (sleep (1+ (seconds-until-midnight)))
+                                 (setf executed nil))
                         
                      ,(when at `(sleep (seconds-until-timestring ,at)))
                      (setf executed t)
@@ -74,7 +70,11 @@ if AT is nil, code is ran at midnight on DAY"
           (lambda () ,code))
         code)))
 
-(defun get-dow-for (day)
+(defun current-day ()
+  "returns the current day of the week"
+  (nth 6 (multiple-value-list (get-decoded-time))))
+
+(defun dow-for (day)
   "returns the day of the week for DAY"
   (case day
     (:sunday 6)
