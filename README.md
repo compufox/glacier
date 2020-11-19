@@ -80,9 +80,28 @@ runs BOT, setting up websocket handlers and starting the streaming connection be
 if DELETE-COMMAND is non-nil, automatically adds a delete command
 if WITH-WEBSOCKET is non-nil (default), automatically starts up a websocket listener for realtime updates
 
-NOTE: DELETE-COMMAND is ignored used if WITH-WEBSOCKET is nil
+NOTE: DELETE-COMMAND is ignored if WITH-WEBSOCKET is nil
 
 if BODY is not provided drops into a loop where we sleep until the user quits us, or our connection closes. this functionality does not happen if WITH-WEBSOCKET is nil.
+
+---
+
+`post (text &key (visibility :unlisted) cw media sensitive)`
+
+a thin wrapper around TOOTER:MAKE-STATUS 
+
+`(post "hi~" :visibility :public)`
+
+
+---
+
+`reply (status text &key include-mentions media)`
+
+replys to STATUS with TEXT
+
+if include-mentions is non-nil then the reply will contain **all** mentions from the original status
+
+NOTE: reply will **always** include an @ to the person it's replying to
 
 ---
 
@@ -128,6 +147,12 @@ returns T if STATUS was posted by the bot
 
 ---
 
+`no-bot-p (account-or-mention)`
+
+returns T if ACCOUNT (or account from MENTION) has #NoBot in their profile's bio
+
+---
+
 `delete-parent (status)`
 
 deletes the parent to STATUS if it was made by the bot
@@ -157,22 +182,17 @@ if RUN-IMMEDIATELY is non-nil, executes BODY once before waiting for the next it
 
 ---
 
-`post (text &key (visibility :unlisted) cw media sensitive)`
+`on ((day &key at async) &body body`
 
-a thin wrapper around TOOTER:MAKE-STATUS 
+runs BODY on DAY, optionally AT a time
 
-`(post "hi~" :visibility :public)`
+DAY is a keyword with the day of the week (e.g., :sunday, :monday, etc)
 
+AT is a string denoting a time (e.g., "13:20", "4:20PM", "23:00")
 
----
+if ASYNC is non-nil code is executed asynchronously
 
-`reply (status text &key include-mentions media)`
-
-replys to STATUS with TEXT
-
-if include-mentions is non-nil then the reply will contain **all** mentions from the original status
-
-NOTE: reply will **always** include an @ to the person it's replying to
+if AT is nil, code is ran at midnight on DAY
 
 ---
 
@@ -202,20 +222,6 @@ defaults to "!"
 terminates the websocket connection that feeds the bot streaming updates
 
 effectively terminates the bot
-
----
-
-`on ((day &key at async) &body body`
-
-runs BODY on DAY, optionally AT a time
-
-DAY is a keyword with the day of the week (e.g., :sunday, :monday, etc)
-
-AT is a string denoting a time (e.g., "13:20", "4:20PM", "23:00")
-
-if ASYNC is non-nil code is executed asynchronously
-
-if AT is nil, code is ran at midnight on DAY
 
 ---
 
