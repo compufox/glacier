@@ -38,6 +38,7 @@ VALUE is a function that accepts a tooter:status object as a parameter")
 
 (defmethod initialize-instance :after ((instance mastodon-bot) &rest initargs
 				       &key config-file &allow-other-keys)
+  (declare (ignorable initargs))
   (load-config config-file)
   (let* ((client (make-instance 'bot-client
 				:access-token (config :mastodon-token)

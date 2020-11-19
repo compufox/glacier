@@ -83,7 +83,8 @@ if AT is nil, code is ran at midnight on DAY"
     (:wednesday 2)
     (:thursday 3)
     (:friday 4)
-    (:saturday 5)))
+    (:saturday 5)
+    (t -1)))
 
 (defun seconds-until-midnight ()
   "returns how many seconds until it's midnight"
