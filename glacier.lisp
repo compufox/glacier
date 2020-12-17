@@ -5,11 +5,13 @@
 (defvar *websocket-client* nil
   "global websocket client")
 
-(defmacro run-bot ((bot &key delete-command (with-websocket t)) &body body)
+(defmacro run-bot ((bot &key delete-command (with-websocket t) (restart-on-close t))
+                   &body body)
   "runs BOT, setting up websocket handlers and starting the streaming connection before executing BODY
 
 if DELETE-COMMAND is non-nil, automatically adds a delete command
 if WITH-WEBSOCKET is non-nil (default), automatically starts up a websocket listener for realtime updates
+if RESTART-ON-CLOSE is non-nil (default), automatically restarts closed websocket connection when/if it closes. NOTE: does not differentiate between failed connections and properly closed connections. it will just automatically restart
 
 NOTE: DELETE-COMMAND is ignored used if WITH-WEBSOCKET is nil
 
@@ -32,7 +34,8 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
 
                        (wsd:on :open *websocket-client* #'print-open)
                        (wsd:on :message *websocket-client* #'dispatch)
-                       (wsd:on :close *websocket-client* #'print-close)
+                       (when restart-on-close
+                         (wsd:on :close *websocket-client* #'restart-websocket))
                        (wsd:start-connection *websocket-client*)))
 
                  ,@(if body
@@ -104,6 +107,15 @@ if STATUS comes from an account the bot is following, also checks for any comman
 	  ;;  that we actually did something
 	  t)))))
 
+(defun restart-websocket (&key code reason)
+  "handles restarting the websocket connection on close"
+  (declare (ignorable code reason))
+  (format t "restarting websocket~&")
+  (setf *websocket-client*
+        (restart-connection *websocket-client*
+                            :on-open #'print-open
+                            :on-message #'dispatch
+                            :on-close #'restart-websocket)))
 
 (defun terminate-connection ()
   "closes the websocket connection and clears the variable from memory"

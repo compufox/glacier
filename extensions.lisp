@@ -94,3 +94,24 @@ see documentation for that function"
   (when (config :strip-bot-username)
     (setf (tooter:content status) (str:replace-all (bot-username *bot*) "" (tooter:content status))))
   status)
+
+(defmethod restart-connection ((client websocket-driver.ws.client::client) 
+                               &key ca-path (verify t) on-message on-open on-close)
+  "restart CLIENT connection, returns a new client that is connected.
+
+ON-OPEN, ON-CLOSE, and ON-MESSAGE are functions that are called on connect, close, and when messages are recieved"
+  (let* ((url (slot-value client 'websocket-driver.ws.client::url))
+         (protocols (slot-value client 'websocket-driver.ws.client::accept-protocols))
+         (length (slot-value client 'websocket-driver.ws.base::max-length))
+         (headers (slot-value client 'websocket-driver.ws.client::additional-headers))
+         (c (wsd:make-client url :accept-protocols protocols
+                                 :max-length length
+                                 :additional-headers headers)))
+    (unless (eql (wsd:ready-state client) :closed)
+      (wsd:close-connection client))
+    (wsd:remove-all-listeners client)
+    (when (wsd:start-connection c :ca-path ca-path :verify verify)
+      (when on-message (wsd:on :message c on-message))
+      (when on-close (wsd:on :message c on-close))
+      (when on-open (wsd:on :message c on-open))
+      c)))

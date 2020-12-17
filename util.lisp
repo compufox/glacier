@@ -128,11 +128,6 @@ TIME-STRING is of the form '12:04', '18:30', '1:10PM', etc"
   "prints a message when the websocket is connected"
   (print "connected"))
 
-(defun print-close (&key code reason)
-  "prints a message when the websocket is closed"
-  (when (and code reason)
-    (format t "disconnected because ~A (code=~A)~%" reason code)))
-
 (defun add-scheme (domain)
   "adds https scheme to DOMAIN if it isnt already there"
   (if (search "https://" domain)
