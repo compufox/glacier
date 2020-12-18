@@ -73,13 +73,15 @@ them with status personalized with their displayname
 
 ## API
 
-`run-bot ((bot &key delete-command (with-websocket t)) &body body)`
+`run-bot ((bot &key delete-command (with-websocket t) (restart-on-close t)) &body body)`
 
 runs BOT, setting up websocket handlers and starting the streaming connection before executing BODY
 
 if DELETE-COMMAND is non-nil, automatically adds a delete command
 if WITH-WEBSOCKET is non-nil (default), automatically starts up a websocket listener for realtime updates
+if RESTART-ON-CLOSE is non-nil (default), automatically restarts closed websocket connection when/if it closes.
 
+NOTE: RESTART-ON-CLOSE does not differentiate between failed connections and properly closed connections. it will automatically restart either way
 NOTE: DELETE-COMMAND is ignored if WITH-WEBSOCKET is nil
 
 if BODY is not provided drops into a loop where we sleep until the user quits us, or our connection closes. this functionality does not happen if WITH-WEBSOCKET is nil.
