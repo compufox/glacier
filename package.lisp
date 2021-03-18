@@ -8,7 +8,8 @@
   (:import-from :alexandria
 		:hash-table-keys
 		:flatten)
-  (:export :run-bot
+  (:export :make-bot
+           :run-bot
 	   :mastodon-bot
 	   :bot-on-update
 	   :bot-on-delete
