@@ -41,7 +41,7 @@ that posts "trans rights are human rights" every 30 minutes
 please see the example config for option names
 
 ```lisp
-(glacier:run-bot ((make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config"))
+(glacier:run-bot ((make-bot :instance "mastodon.social" :access-token "n0tArealT0KEn"))
   (glacier:after-every (30 :minutes)
     (glacier:post "trans rights are human rights" :visibility :public)))
 ```
@@ -54,8 +54,7 @@ the following runs a bot that responds to a mention with a cordial hello
   (when (glacier:mention-p notification)
     (glacier:reply (tooter:status notification) "hi! :3")))
 
-(glacier:run-bot ((make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config"
-                                                      :on-notification #'maybe-respond)))
+(glacier:run-bot ((make-bot :config-file "/path/to/bot.config" :on-notification #'maybe-respond)))
 ```
 
 the following runs a bot that will respond to posts with `!hello` in 
@@ -68,10 +67,38 @@ them with status personalized with their displayname
 
 (glacier:add-command "hello" #'cordial-reply)
 
-(glacier:run-bot ((make-instance 'glacier:mastodon-bot :config-file "/path/to/bot.config")))
+(glacier:run-bot ((make-bot :config-file "/path/to/bot.config")))
 ```
 
 ## API
+
+`make-bot (&key config-file instance access-token (strip-html t) strip-username (timeline "user") on-update on-delete on-notification)`
+
+makes a bot and returns it. 
+
+INSTANCE, ACCESS-TOKEN, STRIP-HTML, STRIP-USERNAME, TIMELINE are all options that are typically in a config file
+passing these values in allows the developer to skip specifying a config file and can pull values in from other places
+e.g., command line arguments
+
+CONFIG-FILE is a string or a path that denotes a glacier config file
+
+INSTANCE is a mastodon instance domain name, with or without http scheme
+
+ACCESS-TOKEN is an access token for a mastodon account on INSTANCE
+
+STRIP-HTML if non-nil incoming posts will have their html stripped from them. defaults to T
+
+STRIP-USERNAME if non-nil strips the bot's username from incoming posts. defaults to NIL
+
+TIMELINE string denoting which timeline should be used for the streaming websocket. can be one of 'user', 'public', 'direct'. defaults to 'user'
+
+ON-UPDATE a function that accepts a single mastodon status. gets ran for every new post that streams in from TIMELINE
+
+ON-DELETE a function that accepts a single status id. gets ran for every deleted status that streams in from TIMELINE
+
+ON-NOTIFICATION a function that accepts a single mastodon notification. gets ran for every notification that streams in from TIMELINE
+
+---
 
 `run-bot ((bot &key delete-command (with-websocket t)) &body body)`
 
