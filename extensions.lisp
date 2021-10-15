@@ -50,6 +50,17 @@ if it is a list then we decode the response and collect and return them as a lis
                      (cl-ppcre:scan *no-bot-regex* value))
             collect field)))
 
+(defun upload-media (media)
+  "uploads MEDIA to the defined mastodon server.
+returns a list that can be passed into POST or REPLY
+MEDIA may be a list containing pathnames, or lists of the form (PATH-TO-FILE IMAGE-DESCRIPTION)
+if it is like the latter, the description will be applied to the image upon uploading"
+  (flet ((upload (file)
+           (tooter:make-media (bot-client *bot*) (car file) :description (cadr file))))
+    (typecase (car media)
+      (list (mapcar #'upload media))
+      (t media))))
+
 (defmethod no-bot-p ((mention tooter:mention))
   "checks account found in MENTION to see if they have NoBot set"
   (no-bot-p (tooter:find-account (bot-client *bot*) (tooter:id mention))))
@@ -70,7 +81,7 @@ if INCLUDE-MENTIONS is non-nil, include mentions besides the primary account bei
 					 `(,(concatenate 'string "@" (tooter::account-name reply-account))
 					   ,@(when include-mentions reply-mentions)
 					   ,text))
-			:media media
+			:media (upload-media media)
 			:sensitive sensitive
 			:visibility (or visibility (tooter:visibility status))
 			:spoiler-text (or cw (tooter:spoiler-text status))
@@ -81,11 +92,11 @@ if INCLUDE-MENTIONS is non-nil, include mentions besides the primary account bei
 
 see documentation for that function"
   (tooter:make-status (bot-client *bot*)
-		      text
-		      :visibility visibility
-		      :spoiler-text cw
-		      :media media
-		      :sensitive sensitive))
+                      text
+                      :visibility visibility
+                      :spoiler-text cw
+                      :media (upload-media media)
+                      :sensitive sensitive))
 
 ;; strips out html-tags/bot-username if we have that set in our config
 (defmethod tooter:decode-entity :after ((status tooter:status) data)
