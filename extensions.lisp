@@ -57,9 +57,13 @@ MEDIA may be a list containing pathnames, or lists of the form (PATH-TO-FILE IMA
 if it is like the latter, the description will be applied to the image upon uploading"
   (flet ((upload (file)
            (tooter:make-media (bot-client *bot*) (car file) :description (cadr file))))
-    (typecase (car media)
-      (list (mapcar #'upload media))
-      (t media))))
+    (if (listp media)
+        (loop :for v :in media
+              :if (listp v)
+                :collect (upload v)
+              :else
+                :collect v)
+        media)))
 
 (defmethod no-bot-p ((mention tooter:mention))
   "checks account found in MENTION to see if they have NoBot set"
