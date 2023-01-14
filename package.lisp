@@ -33,4 +33,5 @@
 	   :fave-p
 	   :mention-p
 	   :delete-parent
-	   :bot-post-p))
+	   :bot-post-p
+           :time-to-seconds))

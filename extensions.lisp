@@ -91,9 +91,12 @@ if INCLUDE-MENTIONS is non-nil, include mentions besides the primary account bei
 			:spoiler-text (or cw (tooter:spoiler-text status))
 			:in-reply-to (tooter:id status))))
 
-(defun post (text &key (visibility :unlisted) cw sensitive media)
+(defun post (text &key (visibility :unlisted) cw sensitive media
+                       poll-options poll-multiple-choice-p poll-timeout poll-hide-totals-p)
   "a thin wrapper around tooter:make-status
 will automatically generate a content warning if cw-mappings was provided when the bot was created
+
+Note: POLL-TIMEOUT is the number of seconds until the poll ends
 
 see documentation for that function"
   (tooter:make-status (bot-client *bot*)
@@ -101,7 +104,11 @@ see documentation for that function"
                       :visibility visibility
                       :spoiler-text (or cw (generate-cw text (config :cw-mappings)))
                       :media (upload-media media)
-                      :sensitive sensitive))
+                      :sensitive sensitive
+                      :poll-options poll-options
+                      :poll-expire-seconds poll-timeout
+                      :poll-multiple poll-multiple-choice-p
+                      :poll-hide-totals poll-hide-totals-p))
 
 ;; strips out html-tags/bot-username if we have that set in our config
 (defmethod tooter:decode-entity :after ((status tooter:status) data)

@@ -43,7 +43,16 @@
                       trigger-def nil)
 
           :finally (return file-def))))
-          
+
+(defun time-to-seconds (&rest rest)
+  "takes all values passed as REST, converts the time into seconds, and returns the total
+
+REST should be arguments compatible with PARSE-TIME
+example usage: (time-to-seconds 1 :day 2 :hours 30 :minutes)"
+  (loop :for i :from 2 :to (length rest) :by 2
+        :for time := (subseq rest (- i 2) i)
+
+        :summing (apply #'parse-time (car time) (cdr time))))
 
 (defun parse-time (amount duration)
   "parses AMOUNT of DURATION into seconds"

@@ -117,11 +117,16 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
 
 ---
 
-`post (text &key (visibility :unlisted) cw media sensitive)`
+`post (text &key (visibility :unlisted) cw media sensitive
+                 poll-options poll-multiple-choice-p poll-timeout poll-hide-totals-p)`
 
 a thin wrapper around TOOTER:MAKE-STATUS 
 
 will automatically generate a content warning if cw-mappings was provided when the bot was created
+
+
+Note: POLL-TIMEOUT is the number of seconds until the poll ends
+
 
 `(post "hi~" :visibility :public)`
 
@@ -226,6 +231,17 @@ AT is a string denoting a time (e.g., "13:20", "4:20PM", "23:00")
 if ASYNC is non-nil code is executed asynchronously
 
 if AT is nil, code is ran at midnight on DAY
+
+---
+
+`time-to-seconds &rest rest`
+
+takes all values passed as REST, converts the time into seconds, and returns the total
+
+REST should be arguments compatible with PARSE-TIME
+
+
+example usage: (time-to-seconds 1 :day 2 :hours 30 :minutes)
 
 ---
 
