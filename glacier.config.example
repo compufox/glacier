@@ -9,3 +9,8 @@ strip-html = true
 # defaults to false
 strip-bot-username = true
 timeline = user # or public/direct
+
+# tells the bot to load content warning mappings from the listed files
+# each "map" file should contain a single ALIST expression
+#  see the content-warning.map.example file for example
+cw-mappings = file1.map, file2.map

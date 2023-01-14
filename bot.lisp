@@ -37,7 +37,9 @@ VALUE is a function that accepts a tooter:status object as a parameter")
   (:documentation "bot superclass"))
 
 (defmethod initialize-instance :after ((bot mastodon-bot) &rest initargs
-                                       &key config-file instance token strip-html strip-username timeline
+                                       &key config-file instance token
+                                            strip-html strip-username timeline
+                                            cw-mappings
                                        &allow-other-keys)
   (declare (ignorable initargs))
   (when config-file
@@ -49,7 +51,21 @@ VALUE is a function that accepts a tooter:status object as a parameter")
     (setf-unless (config :strip-bot-username) strip-username)
     (setf-unless (config :timeline) timeline)
     (setf-unless (config :mastodon-instance) instance)
-    (setf-unless (config :mastodon-token) token))
+    (setf-unless (config :mastodon-token) token)
+    (setf-unless (config :cw-mappings) cw-mappings))
+
+  ;; load our mappings if provided and they exist
+  (when (config :cw-mappings)
+    (setf (config :cw-mappings)
+          (loop :with mappings
+                :for f in (config :cw-mappings)
+                
+                :when (uiop:file-exists-p f)
+                  :do (setf mappings
+                            (append mappings
+                                    (parse-mapping-file f)))
+                :finally (return mappings))))
+               
   
   (let* ((client (make-instance 'bot-client
                                 :access-token (config :mastodon-token)
@@ -60,7 +76,7 @@ VALUE is a function that accepts a tooter:status object as a parameter")
 	  (slot-value bot 'account-username) (concatenate 'string "@" (tooter:username account)))))
 
 (defun make-bot (&key config-file instance access-token (strip-html t) strip-username (timeline "user")
-                   on-update on-delete on-notification)
+                   on-update on-delete on-notification cw-mappings)
   "makes a bot and returns it. 
 INSTANCE, ACCESS-TOKEN, STRIP-HTML, STRIP-USERNAME, TIMELINE are all options that are typically in a config file
 passing these values in allows the developer to skip specifying a config file and can pull values in from other places
@@ -74,9 +90,10 @@ STRIP-USERNAME if non-nil strips the bot's username from incoming posts. default
 TIMELINE string denoting which timeline should be used for the streaming websocket. can be one of 'user', 'public', 'direct'. defaults to 'user'
 ON-UPDATE a function that accepts a single mastodon status. gets ran for every new post that streams in from TIMELINE
 ON-DELETE a function that accepts a single status id. gets ran for every deleted status that streams in from TIMELINE
-ON-NOTIFICATION a function that accepts a single mastodon notification. gets ran for every notification that streams in from TIMELINE"
+ON-NOTIFICATION a function that accepts a single mastodon notification. gets ran for every notification that streams in from TIMELINE
+CW-MAPPINGS a list of files that contain a single ALIST expression to automatically provide content warnings for generated posts"
   (make-instance 'mastodon-bot :config-file config-file :instance instance :strip-html strip-html
                                :strip-username strip-username :timeline timeline :token access-token
                                :on-update on-update :on-delete on-delete
-                               :on-notification on-notification))
+                               :on-notification on-notification :cw-mappings cw-mappings))
 

@@ -98,7 +98,7 @@ see documentation for that function"
   (tooter:make-status (bot-client *bot*)
                       text
                       :visibility visibility
-                      :spoiler-text cw
+                      :spoiler-text (or cw (generate-cw text (config :cw-mappings)))
                       :media (upload-media media)
                       :sensitive sensitive))
 
