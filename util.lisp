@@ -2,7 +2,7 @@
 
 (declaim (inline fave-p boost-p mention-p follow-p poll-ended-p
 		 follow-request-p bot-post-p agetf seconds-until-midnight
-                 current-day dow-for))
+                 current-day dow-for ensure-list))
 
 (defun generate-cw (status-text mappings)
   "returns a content warning based off of our cw-mappings and the STATUS-TEXT"
@@ -243,3 +243,9 @@ if ADD-PREFIX is non-nil, adds *COMMAND-PREFIX* to the front of CMD (defaults to
   (let ((parent (tooter:find-status (bot-client *bot*) (tooter:in-reply-to-id status))))
     (when (bot-post-p parent)
       (tooter:delete-status (bot-client *bot*) parent))))
+
+(defun ensure-list (obj)
+  "ensures that OBJ is a list"
+  (typecase obj
+    (list obj)
+    (t (list obj))))

@@ -58,7 +58,7 @@ VALUE is a function that accepts a tooter:status object as a parameter")
   (when (config :cw-mappings)
     (setf (config :cw-mappings)
           (loop :with mappings
-                :for f in (config :cw-mappings)
+                :for f in (ensure-list (config :cw-mappings))
                 
                 :when (uiop:file-exists-p f)
                   :do (setf mappings
@@ -91,7 +91,7 @@ TIMELINE string denoting which timeline should be used for the streaming websock
 ON-UPDATE a function that accepts a single mastodon status. gets ran for every new post that streams in from TIMELINE
 ON-DELETE a function that accepts a single status id. gets ran for every deleted status that streams in from TIMELINE
 ON-NOTIFICATION a function that accepts a single mastodon notification. gets ran for every notification that streams in from TIMELINE
-CW-MAPPINGS a list of files that contain mappings specially formatted for the bot to automatically provide content warnings for generated posts. please see provided content-warning.map.example for examples of the formatting"
+CW-MAPPINGS a pathname or list of files that contain mappings specially formatted for the bot to automatically provide content warnings for generated posts. please see provided content-warning.map.example for examples of the formatting"
   (make-instance 'mastodon-bot :config-file config-file :instance instance :strip-html strip-html
                                :strip-username strip-username :timeline timeline :token access-token
                                :on-update on-update :on-delete on-delete

@@ -100,7 +100,7 @@ ON-DELETE a function that accepts a single status id. gets ran for every deleted
 
 ON-NOTIFICATION a function that accepts a single mastodon notification. gets ran for every notification that streams in from TIMELINE
 
-CW-MAPPINGS a list of files that contain mappings specially formatted for the bot to automatically provide content warnings for generated posts. please see content-warning.map.example for examples of the formatting
+CW-MAPPINGS a pathname or list of files that contain mappings specially formatted for the bot to automatically provide content warnings for generated posts. please see content-warning.map.example for examples of the formatting
 
 ---
 
