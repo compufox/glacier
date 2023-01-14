@@ -93,6 +93,7 @@ if INCLUDE-MENTIONS is non-nil, include mentions besides the primary account bei
 
 (defun post (text &key (visibility :unlisted) cw sensitive media)
   "a thin wrapper around tooter:make-status
+will automatically generate a content warning if cw-mappings was provided when the bot was created
 
 see documentation for that function"
   (tooter:make-status (bot-client *bot*)

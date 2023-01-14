@@ -5,7 +5,9 @@ lightweight wrapper for making mastodon bots
 
 ## Installation
 
-clone this repo into your local system definitions or `~/common-lisp` folder
+`(ql:quickload :glacier)`
+
+or clone this repo into your local system definitions or `~/common-lisp` folder
 
 ## Usage
 
@@ -72,7 +74,7 @@ them with status personalized with their displayname
 
 ## API
 
-`make-bot (&key config-file instance access-token (strip-html t) strip-username (timeline "user") on-update on-delete on-notification)`
+`make-bot (&key config-file instance access-token (strip-html t) strip-username (timeline "user") on-update on-delete on-notification :cw-mappings)`
 
 makes a bot and returns it. 
 
@@ -98,6 +100,8 @@ ON-DELETE a function that accepts a single status id. gets ran for every deleted
 
 ON-NOTIFICATION a function that accepts a single mastodon notification. gets ran for every notification that streams in from TIMELINE
 
+CW-MAPPINGS a list of files that contain mappings specially formatted for the bot to automatically provide content warnings for generated posts. please see content-warning.map.example for examples of the formatting
+
 ---
 
 `run-bot ((bot &key delete-command (with-websocket t)) &body body)`
@@ -116,6 +120,8 @@ if BODY is not provided drops into a loop where we sleep until the user quits us
 `post (text &key (visibility :unlisted) cw media sensitive)`
 
 a thin wrapper around TOOTER:MAKE-STATUS 
+
+will automatically generate a content warning if cw-mappings was provided when the bot was created
 
 `(post "hi~" :visibility :public)`
 
