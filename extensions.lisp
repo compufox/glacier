@@ -92,23 +92,33 @@ if INCLUDE-MENTIONS is non-nil, include mentions besides the primary account bei
 			:in-reply-to (tooter:id status))))
 
 (defun post (text &key (visibility :unlisted) cw sensitive media
-                       poll-options poll-multiple-choice-p poll-timeout poll-hide-totals-p)
+                       poll-options poll-timeout
+                       (poll-hide-totals-p nil h-p) (poll-multiple-choice-p nil m-p))
   "a thin wrapper around tooter:make-status
 will automatically generate a content warning if cw-mappings was provided when the bot was created
 
 Note: POLL-TIMEOUT is the number of seconds until the poll ends
 
 see documentation for that function"
-  (tooter:make-status (bot-client *bot*)
-                      text
-                      :visibility visibility
-                      :spoiler-text (or cw (generate-cw text (config :cw-mappings)))
-                      :media (upload-media media)
-                      :sensitive sensitive
-                      :poll-options poll-options
-                      :poll-expire-seconds poll-timeout
-                      :poll-multiple poll-multiple-choice-p
-                      :poll-hide-totals poll-hide-totals-p))
+
+  (when (and *cw-mappings* (mappings-updated-p (config :cw-mappings)))
+    (setf *cw-mappings* (load-mapping-files (config :cw-mappings))
+          *mappings-write-date* (map 'list #'file-write-date
+                                     (ensure-list (config :cw-mappings)))))
+
+  (let ((args `(,(bot-client *bot*) ,text
+                :visibility ,visibility
+                :spoiler-text ,(or cw (generate-cw text *cw-mappings*))
+                :media ,(upload-media media)
+                :sensitive ,sensitive
+                :poll-options ,poll-options
+                :poll-expire-seconds ,poll-timeout)))
+    (when m-p
+      (setf args (append args (list :poll-multiple poll-multiple-choice-p))))
+    (when h-p
+      (setf args (append args (list :poll-hide-totals poll-hide-totals-p))))
+
+    (apply #'tooter:make-status args)))
 
 ;; strips out html-tags/bot-username if we have that set in our config
 (defmethod tooter:decode-entity :after ((status tooter:status) data)

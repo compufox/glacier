@@ -1,24 +1,5 @@
 (in-package #:glacier)
 
-(defvar *bot* nil
-  "global bot object")
-
-(defvar *commands* (make-hash-table :test #'equal)
-  "hash table containing the bot's commands
-
-KEY is the command as a string
-VALUE is a function that accepts a tooter:status object as a parameter")
-
-(defvar *command-prefix* "!"
-  "character or string that prefixes a command")
-
-(defvar *privileged-commands* (make-hash-table :test #'equal)
-  "hash table containing commands that will only be ran if the mention
-is from an account the bot follows
-
-KEY is the command as a string
-VALUE is a function that accepts a tooter:status object as a parameter")
-
 (defclass bot-client (tooter:client) ()
   (:default-initargs
    :name "GlacierBot"
@@ -56,15 +37,10 @@ VALUE is a function that accepts a tooter:status object as a parameter")
 
   ;; load our mappings if provided and they exist
   (when (config :cw-mappings)
-    (setf (config :cw-mappings)
-          (loop :with mappings
-                :for f in (ensure-list (config :cw-mappings))
-                
-                :when (uiop:file-exists-p f)
-                  :do (setf mappings
-                            (append mappings
-                                    (parse-mapping-file f)))
-                :finally (return mappings))))
+    (setf *cw-mappings* (load-mapping-files (config :cw-mappings))
+
+          *mappings-write-date* (map 'list #'file-write-date
+                                     (ensure-list (config :cw-mappings)))))
                
   
   (let* ((client (make-instance 'bot-client

@@ -10,7 +10,9 @@
 	       #:tooter #:cl-ppcre #:alexandria)
   :serial t
   :components ((:file "package")
+               (:file "variables")
+	       (:file "util")
+               (:file "mappings")
 	       (:file "bot")
 	       (:file "extensions")
-	       (:file "util")
                (:file "glacier")))
